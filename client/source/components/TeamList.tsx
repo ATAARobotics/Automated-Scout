@@ -2,7 +2,7 @@ import * as React from "react";
 
 import { TeamInfo } from "../lib";
 
-const COMPARISON_TEAM_NUMBER = 4421;
+const COMPARISON_TEAM_NUMBERS = [0, 4421];
 
 interface TeamListProps {
 	data: TeamInfo[];
@@ -41,6 +41,8 @@ function gcd(a: number, b: number): number {
  * @returns The formatted ratio.
  */
 function formatRatio(a: number, b: number): string {
+	a = Math.floor(a);
+	b = Math.floor(b);
 	let gcf = gcd(a, b);
 	if (a === 0 || b === 0) {
 		gcf = 1;
@@ -58,64 +60,66 @@ function formatRatio(a: number, b: number): string {
 function renderSingleTeam(info: TeamInfo, idx: number): JSX.Element {
 	return (
 		<div key={idx} className={`teamRow ${idx % 2 === 0 ? "even" : "odd"}`}>
-			<span className={`teamNumber`}>{info.teamNumber}</span>
-			<span className={`autoScore`}>{info.averageAutoScore}</span>
-			<span className={`autoEfficiency`}>
+			<span className="teamNumber">
+				{info.teamNumber === 0 ? "Average" : info.teamNumber}
+			</span>
+			<span className="autoScore">{Math.round(info.averageAutoScore)}</span>
+			<span className="autoEfficiency">
 				{info.averageAutoScore > 0
 					? formatPercent(info.averageAutoBallEfficiency)
 					: "-"}
 			</span>
-			<span className={`autoHighLowGoal`}>
+			<span className="autoHighLowGoal">
 				{formatRatio(info.averageAutoHighGoals, info.averageAutoLowGoals)}
 			</span>
-			<span className={`teleopScore`}>{info.averageTeleopScore}</span>
-			<span className={`teleopEfficiency`}>
+			<span className="teleopScore">
+				{Math.round(info.averageTeleopScore)}
+			</span>
+			<span className="teleopEfficiency">
 				{info.averageTeleopScore > 0
 					? formatPercent(info.averageTeleopBallEfficiency)
 					: "-"}
 			</span>
-			<span className={`teleopHighLowGoal`}>
+			<span className="teleopHighLowGoal">
 				{formatRatio(
 					info.averageTeleopHighGoals,
 					info.averageTeleopLowGoals,
 				)}
 			</span>
-			<span className={`climbScore`}>
-				{info.averageClimbScore.toString()}
-				<br />({formatPercent(info.climbBeforeEndgameRate)} early)
+			<span className="climbScore">
+				{Math.round(info.averageClimbScore).toString()}
 			</span>
-			<span className={`climbAccuracy`}>
+			<span className="climbAccuracy">
 				{info.climbAttemptCounts
 					.map(([attempts, successes]) => {
 						if (attempts === 0) {
 							return "-";
 						}
-						return (
-							(
-								Math.round((successes / attempts) * 1000) / 10
-							).toString() + "%"
-						);
+						return formatPercent(successes / attempts);
 					})
 					.join(", ")}
 			</span>
-			<span className={`defenceScore`}>
+			<span className="climbStartEarlyRate">
+				{formatPercent(info.climbBeforeEndgameRate)}
+			</span>
+			<span className="defenceScore">
 				{info.averageDefenceScore === 0
 					? "-"
-					: info.averageDefenceScore.toString()}
+					: Math.round(info.averageDefenceScore).toString()}
 			</span>
-			<span className={`winLossRatio`}>
+			<span className="winLossRatio">
 				{formatRatio(info.winCount, info.lossCount)}
 			</span>
-			<span className={`general`}>
-				Speed: {Math.round(info.overallSpeed * 10.0)}/10 Stability:{" "}
-				{Math.round(info.overallStability * 10.0)}/10 Defence:{" "}
-				{Math.round(info.overallDefence * 10.0)}/10
+			<span className="general">
+				Speed:&nbsp;{Math.round(info.overallSpeed * 10.0)}/10
+				Stability:&nbsp;{Math.round(info.overallStability * 10.0)}/10
+				Defence:&nbsp;{Math.round(info.overallDefence * 10.0)}/10
 			</span>
-			<span className={`score`}>
-				{(
+			<span className="score">
+				{Math.round(
 					info.averageAutoScore +
-					info.averageTeleopScore +
-					info.averageClimbScore
+						info.averageTeleopScore +
+						info.averageClimbScore,
 				).toString()}
 			</span>
 		</div>
@@ -144,23 +148,27 @@ export default function TeamList(props: TeamListProps): React.ReactElement {
 					</span>
 					<span className="climbScore">Climb Score</span>
 					<span className="climbAccuracy">Climb Accuracy</span>
+					<span className="climbStartEarlyRate">
+						Climb Start Early Rate
+					</span>
 					<span className="defenceScore">Defence Score</span>
 					<span className="winLossRatio">Win:Loss Ratio</span>
 					<span className="general">Overall</span>
 					<span className="score">Score Contribution</span>
 				</div>
-				{props.data.reduce<undefined | JSX.Element>(
-					(prev, cur) =>
-						(prev !== undefined
-							? prev
-							: cur.teamNumber === COMPARISON_TEAM_NUMBER
-							? renderSingleTeam(cur, 0)
-							: undefined),
-					undefined,
-				)}
+				{props.data
+					.filter(
+						(info) =>
+							COMPARISON_TEAM_NUMBERS.indexOf(info.teamNumber) > -1,
+					)
+					.flatMap((info, idx) => renderSingleTeam(info, idx))}
 			</div>
 			<div className="teamList">
-				{props.data.filter(info => info.teamNumber !== COMPARISON_TEAM_NUMBER).flatMap((info, idx) => renderSingleTeam(info, idx))}
+				{props.data
+					.filter(
+						(info) => COMPARISON_TEAM_NUMBERS.indexOf(info.teamNumber) < 0,
+					)
+					.flatMap((info, idx) => renderSingleTeam(info, idx))}
 			</div>
 		</div>
 	);

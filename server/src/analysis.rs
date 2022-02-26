@@ -139,7 +139,62 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		team_info.overall_defence /= match_count;
 		team_info.climb_fail_rate /= match_count;
 	}
+	let mut average = TeamInfo {
+		team_number: 0,
+		..TeamInfo::default()
+	};
+	for team_info in teams.values() {
+		average.average_auto_score += team_info.average_auto_score;
+		average.average_teleop_score += team_info.average_teleop_score;
+		average.average_climb_score += team_info.average_climb_score;
+		average.average_auto_ball_efficiency += team_info.average_auto_ball_efficiency;
+		average.average_auto_high_goals += team_info.average_auto_high_goals;
+		average.average_auto_low_goals += team_info.average_auto_low_goals;
+		average.average_teleop_ball_efficiency += team_info.average_teleop_ball_efficiency;
+		average.average_teleop_high_goals += team_info.average_teleop_high_goals;
+		average.average_teleop_low_goals += team_info.average_teleop_low_goals;
+		average.average_defence_score += team_info.average_defence_score;
+		average.climb_fail_rate += team_info.climb_fail_rate;
+		for i in 0..4 {
+			average.climb_attempt_counts[i].0 += team_info.climb_attempt_counts[i].0;
+			average.climb_attempt_counts[i].1 += team_info.climb_attempt_counts[i].1;
+		}
+		average.climb_before_endgame_rate += team_info.climb_before_endgame_rate;
+		average.win_count += team_info.win_count;
+		average.loss_count += team_info.loss_count;
+		average.overall_speed += team_info.overall_speed;
+		average.overall_stability += team_info.overall_stability;
+		average.overall_defence += team_info.overall_defence;
+		average.matches += team_info.matches;
+	}
+	{
+		let total_teams = teams.len() as u32;
+		let total_teams_f = teams.len() as f32;
+		average.average_auto_score /= total_teams_f;
+		average.average_teleop_score /= total_teams_f;
+		average.average_climb_score /= total_teams_f;
+		average.average_auto_ball_efficiency /= total_teams_f;
+		average.average_auto_high_goals /= total_teams_f;
+		average.average_auto_low_goals /= total_teams_f;
+		average.average_teleop_ball_efficiency /= total_teams_f;
+		average.average_teleop_high_goals /= total_teams_f;
+		average.average_teleop_low_goals /= total_teams_f;
+		average.average_defence_score /= total_teams_f;
+		average.climb_fail_rate /= total_teams_f;
+		for i in 0..4 {
+			average.climb_attempt_counts[i].0 /= total_teams;
+			average.climb_attempt_counts[i].1 /= total_teams;
+		}
+		average.climb_before_endgame_rate /= total_teams_f;
+		average.win_count /= total_teams;
+		average.loss_count /= total_teams;
+		average.overall_speed /= total_teams_f;
+		average.overall_stability /= total_teams_f;
+		average.overall_defence /= total_teams_f;
+		average.matches /= total_teams;
+	}
 	let mut team_list: Vec<TeamInfo> = teams.into_values().collect();
+	team_list.push(average);
 	team_list.sort();
 	team_list
 }
