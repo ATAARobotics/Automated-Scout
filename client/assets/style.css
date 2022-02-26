@@ -1,7 +1,32 @@
 body {
 	font-family: sans-serif;
+	color: #e0e0e0;
+	background-color: #101012;
 }
 
-.sidebar {
-	scrollbar-width: none;
+.teamList.pinned {
+	border-bottom: 2px solid #c0c0c0;
+	box-shadow: 0 0.5rem 1rem #00000040;
+	z-index: 1;
+	font-weight: bold;
+}
+
+.teamList .pinned span {
+	background-color: #00000040;
+	font-weight: bold;
+}
+
+.teamRow.odd span {
+	background-color: #282b30;
+}
+
+.teamRow.even span {
+	background-color: #202428;
+}
+
+.pinned .teamRow span {
+	background-color: #181b20;
+}
+
+.teamRow span {
 }

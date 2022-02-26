@@ -9,11 +9,11 @@ import * as React from "react";
 export function toTitleCase(str: string): string {
 	// I really miss rust's return syntax or at least the semi-colon checking
 	return str
-		.replace(/([A-Z])/g, s => " " + s)
+		.replace(/([A-Z])/g, (s) => " " + s)
 		.replace(/[-_.:\s]/, " ")
 		.toLowerCase()
 		.split(" ")
-		.map(s => s.replace(/(.)/, c => c.toUpperCase()))
+		.map((s) => s.replace(/(.)/, (c) => c.toUpperCase()))
 		.join(" ");
 }
 
@@ -28,22 +28,36 @@ export interface FetchError {
  * @param path - The api endpoint.
  * @returns The result as a useState object, and a function to refresh from the api.
  */
-export function fetchState<T>(path: string): [{error: false, result: T} | FetchError | undefined, () => void] {
-	const [data, setData] = React.useState<{error: false, result: T} | FetchError>();
+export function fetchState<T>(
+	path: string,
+): [{ error: false; result: T } | FetchError | undefined, () => void] {
+	const [data, setData] = React.useState<
+		{ error: false; result: T } | FetchError
+	>();
 	const [shouldUpdate, setShouldUpdate] = React.useState(false);
 	React.useEffect(() => {
 		fetch(path)
-			.then(response => {
+			.then((response) => {
 				if (response.ok) {
 					return response.json();
 				}
 				throw new Error("Response not ok.");
 			})
-			.then(object => {
-				setData({error: false, result: object as T});
+			.then((rawResult) => {
+				const result = rawResult as
+					| { success: false }
+					| { success: true; data: T };
+				if (result.success) {
+					return result.data;
+				} else {
+					throw new Error("Response not success.");
+				}
 			})
-			.catch(e => {
-				setData({error: true, message: e.message});
+			.then((object) => {
+				setData({ error: false, result: object });
+			})
+			.catch((e) => {
+				setData({ error: true, message: e.message });
 			});
 	}, [shouldUpdate]);
 	return [data, () => setShouldUpdate(!shouldUpdate)];

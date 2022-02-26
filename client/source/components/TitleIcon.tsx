@@ -3,11 +3,12 @@ import * as React from "react";
 interface TitleIconProps {
 	title: string;
 	icon: string;
-};
+}
 
 /**
  * Component to set the tab title and icon.
  *
+ * @param props The title and icon name.
  * @returns The component.
  */
 function TitleIcon(props: TitleIconProps): React.ReactElement {
@@ -20,7 +21,7 @@ function TitleIcon(props: TitleIconProps): React.ReactElement {
 		if (iconElement instanceof HTMLLinkElement) {
 			iconElement.href = "/" + props.icon;
 		}
-	}, [props.title, props.icon])
+	}, [props.title, props.icon]);
 	return <></>;
 }
 

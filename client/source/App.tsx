@@ -11,8 +11,8 @@ import UnknownPage from "./pages/UnknownPage";
  */
 function App(): React.ReactElement {
 	return <div className="app">
-		<div className="sidebar">
-			<h2>Sidebar</h2>
+		<div className="topbar">
+			<h2>Automation McAutoface</h2>
 		</div>
 		<Switch>
 			<Route exact path="/" component={RootPage} />
