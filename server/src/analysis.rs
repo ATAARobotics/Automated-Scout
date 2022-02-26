@@ -64,7 +64,7 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 	for match_info in database.get_all_matches().flatten() {
 		let team = teams
 			.entry(match_info.team_number)
-			.or_insert(TeamInfo::new(match_info.team_number));
+			.or_insert_with(|| TeamInfo::new(match_info.team_number));
 		team.average_auto_score += match_info.auto.low_goal_shots as f32 * 2.0
 			+ match_info.auto.high_goal_shots as f32 * 4.0
 			+ if match_info.auto.exited_tarmac {

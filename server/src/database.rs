@@ -68,4 +68,13 @@ impl Database {
 	pub fn get_all_matches(&self) -> MatchIter {
 		MatchIter::from_sled(self.backend.scan_prefix(b"match_"))
 	}
+	pub fn merge_matches(&self, matches: &Vec<MatchInfo>) -> Result<(), DatabaseError> {
+		for match_info in matches {
+			self.write_match(match_info)?;
+		}
+		Ok(())
+	}
+	pub fn get_match_list(&self) -> Vec<MatchInfo> {
+		self.get_all_matches().map(|data| data.unwrap()).collect()
+	}
 }

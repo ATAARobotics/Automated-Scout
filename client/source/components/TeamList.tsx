@@ -160,13 +160,7 @@ export default function TeamList(props: TeamListProps): React.ReactElement {
 				)}
 			</div>
 			<div className="teamList">
-				{props.data.flatMap((info, idx) => {
-					if (info.teamNumber !== COMPARISON_TEAM_NUMBER) {
-						return renderSingleTeam(info, idx);
-					} else {
-						return [];
-					}
-				})}
+				{props.data.filter(info => info.teamNumber !== COMPARISON_TEAM_NUMBER).flatMap((info, idx) => renderSingleTeam(info, idx))}
 			</div>
 		</div>
 	);

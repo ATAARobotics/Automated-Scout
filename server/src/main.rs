@@ -1,6 +1,8 @@
 mod analysis;
+mod config;
 mod data;
 mod database;
+mod server_sync;
 
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -12,6 +14,7 @@ use actix_web::http::{header, StatusCode};
 use actix_web::web::Data;
 use actix_web::{get, options, put, web, App, HttpRequest, HttpResponse, HttpServer, Responder};
 use futures_util::stream::StreamExt as _;
+use serde_json::json;
 use simplelog::TermLogger;
 
 use crate::data::MatchInfo;
@@ -34,35 +37,39 @@ async fn push_data(data: Data<Arc<Database>>, mut body: web::Payload) -> HttpRes
 		bytes.extend_from_slice(&item.unwrap());
 	}
 	let string = String::from_utf8(bytes.to_vec()).unwrap();
-	let json: Vec<MatchInfo> = serde_json::from_str(&string).unwrap();
-	for match_info in json {
-		data.write_match(&match_info).unwrap();
+	if let Err(e) = data.merge_matches(&serde_json::from_str(&string).unwrap()) {
+		return HttpResponse::build(StatusCode::OK)
+			.content_type(ContentType::json())
+			.append_header((header::ACCESS_CONTROL_ALLOW_ORIGIN, "*"))
+			.body(
+				serde_json::to_string(&json!({"success": false, "error": e.to_string()})).unwrap(),
+			);
 	}
 
 	HttpResponse::build(StatusCode::OK)
 		.content_type(ContentType::json())
 		.append_header((header::ACCESS_CONTROL_ALLOW_ORIGIN, "*"))
-		.body(r#"{"success": true}"#)
+		.body(serde_json::to_string(&json!({"success": true})).unwrap())
 }
 
 #[get("/api/pull")]
 async fn pull_data(data: Data<Arc<Database>>) -> HttpResponse {
-	let matches: Vec<MatchInfo> = data.get_all_matches().map(|data| data.unwrap()).collect();
-	let json = serde_json::to_string(&matches).unwrap();
 	HttpResponse::build(StatusCode::OK)
 		.content_type(ContentType::json())
 		.append_header((header::ACCESS_CONTROL_ALLOW_ORIGIN, "*"))
-		.body(format!("{{\"success\": true, \"data\": {}}}", json))
+		.body(
+			serde_json::to_string(&json!({"success": false, "data": data.get_match_list()}))
+				.unwrap(),
+		)
 }
 
 #[get("/api/analysis")]
 async fn get_analysis(data: Data<Arc<Database>>) -> HttpResponse {
 	let teams = analysis::analyze_data(&data);
-	let json = serde_json::to_string(&teams).unwrap();
 	HttpResponse::build(StatusCode::OK)
 		.content_type(ContentType::json())
 		.append_header((header::ACCESS_CONTROL_ALLOW_ORIGIN, "*"))
-		.body(format!("{{\"success\": true, \"data\": {}}}", json))
+		.body(serde_json::to_string(&json!({"success": true, "data": teams})).unwrap())
 }
 
 #[get("/api/csv")]
@@ -83,6 +90,7 @@ async fn get_index(_req: HttpRequest) -> impl Responder {
 
 #[tokio::main]
 async fn main() {
+	let config = config::read_config();
 	TermLogger::init(
 		simplelog::LevelFilter::Trace,
 		simplelog::ConfigBuilder::new()
@@ -93,7 +101,23 @@ async fn main() {
 		simplelog::ColorChoice::Always,
 	)
 	.unwrap();
-	let database = Arc::new(Database::open(&PathBuf::from_str("database").unwrap()));
+	let database = Arc::new(Database::open(&PathBuf::from_str("matches.db").unwrap()));
+	if let Some(leader_url) = &config.leader_url {
+		let leader_url = leader_url.to_owned();
+		let database = database.clone();
+		println!("Following leader at {}", leader_url);
+		tokio::spawn(async move {
+			let mut interval = tokio::time::interval(tokio::time::Duration::from_millis(
+				(config.sync_interval / 1000.0) as u64,
+			));
+			loop {
+				interval.tick().await;
+				if let Err(e) = server_sync::try_sync(&database, &leader_url) {
+					eprintln!("Error syncing with leader: {}", e);
+				}
+			}
+		});
+	}
 	HttpServer::new(move || {
 		let database = database.clone();
 		App::new()
