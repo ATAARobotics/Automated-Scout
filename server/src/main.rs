@@ -58,7 +58,7 @@ async fn pull_data(data: Data<Arc<Database>>) -> HttpResponse {
 		.content_type(ContentType::json())
 		.append_header((header::ACCESS_CONTROL_ALLOW_ORIGIN, "*"))
 		.body(
-			serde_json::to_string(&json!({"success": false, "data": data.get_match_list()}))
+			serde_json::to_string(&json!({"success": true, "data": data.get_match_list()}))
 				.unwrap(),
 		)
 }

@@ -30,3 +30,16 @@ body {
 
 .teamRow span {
 }
+
+.teamList .teamNumber {
+	text-align: right;
+	font-weight: bold;
+}
+
+.header span {
+	text-align: center;
+}
+
+.teamList .defenceScore, .teamList .matches, .teamList .score {
+	text-align: center;
+}

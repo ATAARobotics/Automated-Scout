@@ -84,7 +84,7 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		};
 		let auto_shots =
 			match_info.auto.low_goal_shots as f32 + match_info.auto.high_goal_shots as f32;
-		let auto_balls = (match_info.auto.cells_acquired as f32
+		let auto_balls = (match_info.auto.cells_acquired as f32 + 1.0
 			- match_info.auto.cells_dropped as f32)
 			.max(auto_shots);
 		if auto_balls > 0.0 {
@@ -181,10 +181,6 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		average.average_teleop_low_goals /= total_teams_f;
 		average.average_defence_score /= total_teams_f;
 		average.climb_fail_rate /= total_teams_f;
-		for i in 0..4 {
-			average.climb_attempt_counts[i].0 /= total_teams;
-			average.climb_attempt_counts[i].1 /= total_teams;
-		}
 		average.climb_before_endgame_rate /= total_teams_f;
 		average.win_count /= total_teams;
 		average.loss_count /= total_teams;
