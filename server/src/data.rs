@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
 
-#[derive(Debug, Copy, Clone, Deserialize, Serialize)]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum MatchType {
 	Qualification,
@@ -93,7 +93,7 @@ pub struct MatchInfo {
 	pub climb: Climb,
 	pub speed: Option<f32>,
 	pub stability: Option<f32>,
-	pub defense: Option<f32>,
+	pub defence: Option<f32>,
 	pub is_primary_defence: bool,
 	pub was_broken: bool,
 	pub was_disabled: bool,
@@ -102,7 +102,7 @@ pub struct MatchInfo {
 }
 
 impl MatchInfo {
-	pub const HEADER: &'static str = "match_number,match_category,team,auto_exited_tarmac,auto_starting_location,auto_cells_acquired,auto_cells_dropped,auto_low_goal_shots,auto_high_goal_shots,teleop_cells_acquired,teleop_cells_dropped,teleop_low_goal_shots,teleop_high_goal_shots,highest_climb_attempted,highest_climb_scored,fell,speed,stability,defense,is_primary_defence,was_broken,was_disabled,notes\n";
+	pub const HEADER: &'static str = "match_number,match_category,team,auto_exited_tarmac,auto_starting_location,auto_cells_acquired,auto_cells_dropped,auto_low_goal_shots,auto_high_goal_shots,teleop_cells_acquired,teleop_cells_dropped,teleop_low_goal_shots,teleop_high_goal_shots,highest_climb_attempted,highest_climb_scored,fell,speed,stability,defence,is_primary_defence,was_broken,was_disabled,notes\n";
 	pub fn write_csv_line(&self) -> String {
 		vec![
 			self.match_number.to_string(),
@@ -130,7 +130,7 @@ impl MatchInfo {
 			self.stability
 				.map(|s| s.to_string())
 				.unwrap_or_else(|| "".to_string()),
-			self.defense
+			self.defence
 				.map(|s| s.to_string())
 				.unwrap_or_else(|| "".to_string()),
 			self.is_primary_defence.to_string(),

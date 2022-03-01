@@ -18,7 +18,7 @@ body {
 
 .teamList {
 	display: grid;
-	grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 2.5fr 1fr 1fr 1fr 3fr 1.5fr;
+	grid-template-columns: 1fr 2.5fr 2.5fr 4fr 1fr 4.5fr 1fr 1fr 1.5fr;
 	width: 100%;
 	overflow-x: hidden;
 	overflow-y: auto;
@@ -40,52 +40,32 @@ body {
 	grid-column: 2;
 }
 
-.teamList .autoEfficiency {
+.teamList .teleopScore {
 	grid-column: 3;
 }
 
-.teamList .autoHighLowGoal {
+.teamList .climbScore {
 	grid-column: 4;
 }
 
-.teamList .teleopScore {
+.teamList .defenceScore {
 	grid-column: 5;
 }
 
-.teamList .teleopEfficiency {
+.teamList .general {
 	grid-column: 6;
 }
 
-.teamList .teleopHighLowGoal {
+.teamList .oprDpr {
 	grid-column: 7;
 }
 
-.teamList .climbScore {
+.teamList .matches {
 	grid-column: 8;
 }
 
-.teamList .climbAccuracy {
-	grid-column: 9;
-}
-
-.teamList .climbStartEarlyRate {
-	grid-column: 10;
-}
-
-.teamList .defenceScore {
-	grid-column: 11;
-}
-
-.teamList .winLossRatio {
-	grid-column: 12;
-}
-
-.teamList .general {
-	grid-column: 13;
-}
-
 .teamList .score {
-	grid-column: 14;
+	grid-column: 9;
 }
 
 .teamListContainer {
