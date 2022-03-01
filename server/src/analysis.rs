@@ -33,6 +33,7 @@ pub struct TeamInfo {
 	pub matches: u32,
 	teleop_scoring_matches: u32,
 	auto_scoring_matches: u32,
+	defended_teams: u32,
 }
 
 impl TeamInfo {
@@ -104,14 +105,12 @@ struct TbaTeam {
 fn get_tba_data() -> HashMap<u32, TbaTeam> {
 	let mut tba_data = HashMap::new();
 
-	let opr_url = &format!(
+	if let Ok(resp) = ureq::get(&format!(
 		"https://www.thebluealliance.com/api/v3/event/{}/oprs",
 		option_env!("TBA_EVENT").unwrap_or("")
-	);
-	println!("Fetching OPR and DPR data from {}", opr_url);
-	if let Ok(resp) = ureq::get(opr_url)
-		.set("X-TBA-Auth-Key", option_env!("TBA_AUTH_KEY").unwrap_or(""))
-		.call()
+	))
+	.set("X-TBA-Auth-Key", option_env!("TBA_AUTH_KEY").unwrap_or(""))
+	.call()
 	{
 		if resp.status() == 200 {
 			if let Ok(Ok(data)) = resp
@@ -168,20 +167,21 @@ fn get_tba_data() -> HashMap<u32, TbaTeam> {
 
 pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 	let mut teams = HashMap::new();
+	let mut matches_by_game = HashMap::new();
 	for match_info in database.get_all_matches().flatten() {
 		let team = teams
 			.entry(match_info.team_number)
 			.or_insert_with(|| TeamInfo::new(match_info.team_number));
-		team.average_auto_score += match_info.auto.low_goal_shots as f32 * 2.0
+		let auto_score = match_info.auto.low_goal_shots as f32 * 2.0
 			+ match_info.auto.high_goal_shots as f32 * 4.0
 			+ if match_info.auto.exited_tarmac {
 				2.0
 			} else {
 				0.0
 			};
-		team.average_teleop_score += match_info.teleop.low_goal_shots as f32
+		let teleop_score = match_info.teleop.low_goal_shots as f32
 			+ match_info.teleop.high_goal_shots as f32 * 2.0;
-		team.average_climb_score += match match_info.climb.highest_scored {
+		let climb_score = match match_info.climb.highest_scored {
 			0 => 0.0,
 			1 => 4.0,
 			2 => 6.0,
@@ -189,6 +189,9 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 			4 => 15.0,
 			_ => unreachable!(),
 		};
+		team.average_auto_score += auto_score;
+		team.average_teleop_score += teleop_score;
+		team.average_climb_score += climb_score;
 		let auto_shots =
 			match_info.auto.low_goal_shots as f32 + match_info.auto.high_goal_shots as f32;
 		let auto_balls = (match_info.auto.cells_acquired as f32 + 1.0
@@ -227,6 +230,10 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		team.overall_stability += match_info.stability.unwrap_or(0.5) as f32;
 		team.overall_defence += match_info.stability.unwrap_or(0.5) as f32;
 		team.matches += 1;
+		matches_by_game
+			.entry((match_info.match_category, match_info.match_number))
+			.or_insert(Vec::new())
+			.push((match_info.team_number, teleop_score));
 	}
 	let tba_data = get_tba_data();
 	for team_info in teams.values_mut() {
@@ -254,6 +261,24 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 			team_info.ranking_points = tba_team.ranking_points;
 			team_info.matches = tba_team.matches_played;
 		}
+	}
+	for matches in matches_by_game.values() {
+		for (team_number, ..) in matches {
+			let (mut average_defence_score, mut defended_teams) = (0.0, 0);
+			for (other_team_number, teleop_score) in matches {
+				if other_team_number != team_number {
+					let other_team = &teams[other_team_number];
+					average_defence_score += other_team.average_teleop_score - teleop_score;
+					defended_teams += 1;
+				}
+			}
+			let team = teams.get_mut(team_number).unwrap();
+			team.average_defence_score += average_defence_score;
+			team.defended_teams += defended_teams;
+		}
+	}
+	for team_info in teams.values_mut() {
+		team_info.average_defence_score /= team_info.defended_teams as f32;
 	}
 	let mut average = TeamInfo {
 		team_number: 0,

@@ -94,6 +94,7 @@ function renderSingleTeam(
 	let autoStyle: React.CSSProperties | undefined;
 	let teleopStyle: React.CSSProperties | undefined;
 	let climbStyle: React.CSSProperties | undefined;
+	let defenceScoreStyle: React.CSSProperties | undefined;
 	let speedStyle: React.CSSProperties | undefined;
 	let stabilityStyle: React.CSSProperties | undefined;
 	let defenceStyle: React.CSSProperties | undefined;
@@ -113,6 +114,13 @@ function renderSingleTeam(
 		};
 		climbStyle = {
 			color: getColour(info.averageClimbScore, average.averageClimbScore, 6),
+		};
+		defenceScoreStyle = {
+			color: getColour(
+				info.averageDefenceScore,
+				average.averageDefenceScore,
+				4,
+			),
 		};
 		speedStyle = {
 			color: getColour(info.overallSpeed, average.overallSpeed, 3),
@@ -181,7 +189,7 @@ function renderSingleTeam(
 					.join(", ")}
 				; {formatPercent(info.climbBeforeEndgameRate)}&nbsp;early)
 			</span>
-			<span className="defenceScore">
+			<span className="defenceScore" style={defenceScoreStyle}>
 				{info.averageDefenceScore === 0
 					? "-"
 					: Math.round(info.averageDefenceScore).toString()}
