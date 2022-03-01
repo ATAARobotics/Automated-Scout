@@ -13,10 +13,13 @@ export interface TeamInfo {
 	climbFailRate: number;
 	climbAttemptCounts: [number, number][];
 	climbBeforeEndgameRate: number;
+	opr: number;
+	dpr: number;
 	winCount: number;
 	lossCount: number;
 	overallSpeed: number;
 	overallStability: number;
 	overallDefence: number;
+	rankingPoints: number;
 	matches: number;
 }

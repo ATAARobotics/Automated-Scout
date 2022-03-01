@@ -40,6 +40,6 @@ body {
 	text-align: center;
 }
 
-.teamList .defenceScore, .teamList .matches, .teamList .score {
+.teamList .defenceScore, .teamList .oprDpr, .teamList .matches, .teamList .score {
 	text-align: center;
 }

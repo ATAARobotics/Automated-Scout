@@ -18,7 +18,7 @@ body {
 
 .teamList {
 	display: grid;
-	grid-template-columns: 1fr 3fr 3fr 4fr 1fr 1fr 4.5fr 2fr;
+	grid-template-columns: 1fr 3fr 3fr 4fr 1fr 4.5fr 1fr 1fr 1.5fr;
 	width: 100%;
 	overflow-x: hidden;
 	overflow-y: auto;
@@ -52,16 +52,20 @@ body {
 	grid-column: 5;
 }
 
-.teamList .matches {
+.teamList .general {
 	grid-column: 6;
 }
 
-.teamList .general {
+.teamList .oprDpr {
 	grid-column: 7;
 }
 
-.teamList .score {
+.teamList .matches {
 	grid-column: 8;
+}
+
+.teamList .score {
+	grid-column: 9;
 }
 
 .teamListContainer {

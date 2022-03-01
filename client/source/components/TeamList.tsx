@@ -55,11 +55,16 @@ function formatRatio(a: number, b: number): string {
  *
  * @param score The score of this team.
  * @param averageScore The average score of all teams.
+ * @param spread The spread between the "best" and average scores.
  * @returns The colour to represent the relative score of this team.
  */
-function getColour(score: number, averageScore: number): string {
+function getColour(
+	score: number,
+	averageScore: number,
+	spread: number,
+): string {
 	const relativeScore = Math.min(
-		Math.max((score - averageScore) / 4.0, -1),
+		Math.max((score - averageScore) / spread, -1),
 		1,
 	);
 	if (relativeScore > 0) {
@@ -92,32 +97,37 @@ function renderSingleTeam(
 	let speedStyle: React.CSSProperties | undefined;
 	let stabilityStyle: React.CSSProperties | undefined;
 	let defenceStyle: React.CSSProperties | undefined;
+	let oprDprStyle: React.CSSProperties | undefined;
 	let winLossStyle: React.CSSProperties | undefined;
 	let scoreStyle: React.CSSProperties | undefined;
 	if (average !== undefined) {
 		autoStyle = {
-			color: getColour(info.averageAutoScore, average.averageAutoScore),
+			color: getColour(info.averageAutoScore, average.averageAutoScore, 6),
 		};
 		teleopStyle = {
-			color: getColour(info.averageTeleopScore, average.averageTeleopScore),
+			color: getColour(
+				info.averageTeleopScore,
+				average.averageTeleopScore,
+				8,
+			),
 		};
 		climbStyle = {
-			color: getColour(info.averageClimbScore, average.averageClimbScore),
+			color: getColour(info.averageClimbScore, average.averageClimbScore, 6),
 		};
 		speedStyle = {
-			color: getColour(info.overallSpeed, average.overallSpeed),
+			color: getColour(info.overallSpeed, average.overallSpeed, 3),
 		};
 		stabilityStyle = {
-			color: getColour(info.overallStability, average.overallStability),
+			color: getColour(info.overallStability, average.overallStability, 3),
 		};
 		defenceStyle = {
-			color: getColour(info.overallDefence, average.overallDefence),
+			color: getColour(info.overallDefence, average.overallDefence, 3),
+		};
+		oprDprStyle = {
+			color: getColour(info.opr - info.dpr, average.opr - average.dpr, 1),
 		};
 		winLossStyle = {
-			color: getColour(
-				info.winCount / info.lossCount,
-				average.winCount / average.lossCount,
-			),
+			color: getColour(info.winCount / info.lossCount, 1.0, 1),
 		};
 		scoreStyle = {
 			color: getColour(
@@ -129,6 +139,7 @@ function renderSingleTeam(
 					average.averageTeleopScore +
 					average.averageClimbScore +
 					average.averageDefenceScore,
+				20,
 			),
 		};
 	}
@@ -175,10 +186,6 @@ function renderSingleTeam(
 					? "-"
 					: Math.round(info.averageDefenceScore).toString()}
 			</span>
-			<span className="matches" style={winLossStyle}>
-				{Math.round(info.matches).toString()}&#8203;/&#8203;
-				{formatRatio(info.winCount, info.lossCount)}
-			</span>
 			<span className="general">
 				<span style={speedStyle}>
 					Speed:&nbsp;{Math.round(info.overallSpeed * 2.0)}/10
@@ -190,12 +197,21 @@ function renderSingleTeam(
 					Defence:&nbsp;{Math.round(info.overallDefence * 2.0)}/10
 				</span>
 			</span>
+			<span className="oprDpr" style={oprDprStyle}>
+				{(Math.round(info.opr * 10.0) / 10.0).toString()}&#8203;/&#8203;
+				{(Math.round(info.dpr * 10.0) / 10.0).toString()}
+			</span>
+			<span className="matches" style={winLossStyle}>
+				{Math.round(info.matches).toString()}&#8203;/&#8203;
+				{formatRatio(info.winCount, info.lossCount)}
+			</span>
 			<span className="score" style={scoreStyle}>
 				{Math.round(
 					info.averageAutoScore +
 						info.averageTeleopScore +
 						info.averageClimbScore,
-				).toString()}
+				).toString()}{" "}
+				({Math.round(info.rankingPoints)})
 			</span>
 		</div>
 	);
@@ -222,16 +238,19 @@ export default function TeamList(props: TeamListProps): React.ReactElement {
 					<span className="teleopScore">Teleop Score (accuracy)</span>
 					<span className="climbScore">Climb Score (accuracy)</span>
 					<span className="defenceScore">Defence Score</span>
-					<span className="matches">Matches</span>
 					<span className="general">Overall</span>
-					<span className="score">Score Contribution</span>
+					<span className="oprDpr">OPR / DPR</span>
+					<span className="matches">Matches</span>
+					<span className="score">Score Contribution (RP)</span>
 				</div>
 				{props.data
 					.filter(
 						(info) =>
 							COMPARISON_TEAM_NUMBERS.indexOf(info.teamNumber) > -1,
 					)
-					.flatMap((info, idx) => renderSingleTeam(info, idx))}
+					.flatMap((info, idx) =>
+						renderSingleTeam(info, idx, averageTeam),
+					)}
 			</div>
 			<div className="teamList">
 				{props.data
