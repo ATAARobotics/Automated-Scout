@@ -37,7 +37,16 @@ async fn push_data(data: Data<Arc<Database>>, mut body: web::Payload) -> HttpRes
 		bytes.extend_from_slice(&item.unwrap());
 	}
 	let string = String::from_utf8(bytes.to_vec()).unwrap();
-	if let Err(e) = data.merge_matches(&serde_json::from_str(&string).unwrap()) {
+	let matches: Vec<MatchInfo> = serde_json::from_str(&string).unwrap();
+	println!(
+		"Got data with teams: {}.",
+		matches
+			.iter()
+			.map(|m| m.team_number.to_string())
+			.collect::<Vec<_>>()
+			.join(", ")
+	);
+	if let Err(e) = data.merge_matches(&matches) {
 		return HttpResponse::build(StatusCode::OK)
 			.content_type(ContentType::json())
 			.append_header((header::ACCESS_CONTROL_ALLOW_ORIGIN, "*"))

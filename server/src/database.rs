@@ -32,10 +32,14 @@ impl Iterator for MatchIter {
 	type Item = Result<MatchInfo, DatabaseError>;
 
 	fn next(&mut self) -> Option<Self::Item> {
-		self.inner.next().map(|i| {
-			let (_key, value) = i?;
-			bincode::deserialize(&value).map_err(DatabaseError::Serde)
-		})
+		while let Some(next) = self.inner.next() {
+			let (_key, value) = next.unwrap();
+			let value: MatchInfo = bincode::deserialize(&value).unwrap();
+			if value.last_modified_time > 1646410041797 {
+				return Some(Ok(value));
+			}
+		}
+		None
 	}
 }
 
