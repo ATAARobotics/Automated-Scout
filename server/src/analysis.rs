@@ -228,7 +228,7 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		}
 		team.overall_speed += match_info.speed.unwrap_or(0.5) as f32;
 		team.overall_stability += match_info.stability.unwrap_or(0.5) as f32;
-		team.overall_defence += match_info.stability.unwrap_or(0.5) as f32;
+		team.overall_defence += match_info.defence.unwrap_or(0.5) as f32;
 		team.matches += 1;
 		matches_by_game
 			.entry((match_info.match_category, match_info.match_number))

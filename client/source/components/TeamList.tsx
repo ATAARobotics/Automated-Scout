@@ -9,6 +9,16 @@ interface TeamListProps {
 }
 
 /**
+ * Round a number to two decimal places
+ *
+ * @param num The number.
+ * @returns The rounded number.
+ */
+function roundNum(num: number): string {
+	return num.toFixed(2);
+}
+
+/**
  * Format a number between 0 and 1 as a percentage with one decimal place.
  *
  * @param num The number to format.
@@ -157,7 +167,7 @@ function renderSingleTeam(
 				{info.teamNumber === 0 ? "Average" : info.teamNumber}
 			</span>
 			<span className="autoScore" style={autoStyle}>
-				{Math.round(info.averageAutoScore)}&#32; (
+				{roundNum(info.averageAutoScore)}&#32; (
 				{info.averageAutoScore > 0
 					? formatPercent(info.averageAutoBallEfficiency)
 					: "-"}
@@ -166,7 +176,7 @@ function renderSingleTeam(
 				&nbsp;h/l)
 			</span>
 			<span className="teleopScore" style={teleopStyle}>
-				{Math.round(info.averageTeleopScore)}&#32; (
+				{roundNum(info.averageTeleopScore)}&#32; (
 				{info.averageTeleopScore > 0
 					? formatPercent(info.averageTeleopBallEfficiency)
 					: "-"}
@@ -178,7 +188,7 @@ function renderSingleTeam(
 				&nbsp;h/l)
 			</span>
 			<span className="climbScore" style={climbStyle}>
-				{Math.round(info.averageClimbScore).toString()} (
+				{roundNum(info.averageClimbScore).toString()} (
 				{info.climbAttemptCounts
 					.map(([attempts, successes]) => {
 						if (attempts === 0) {
@@ -192,34 +202,34 @@ function renderSingleTeam(
 			<span className="defenceScore" style={defenceScoreStyle}>
 				{info.averageDefenceScore === 0
 					? "-"
-					: Math.round(info.averageDefenceScore).toString()}
+					: roundNum(info.averageDefenceScore).toString()}
 			</span>
 			<span className="general">
 				<span style={speedStyle}>
-					Speed:&nbsp;{Math.round(info.overallSpeed * 2.0)}/10
+					Speed:&nbsp;{roundNum(info.overallSpeed * 2.0)}/10
 				</span>
 				<span style={stabilityStyle}>
-					Stability:&nbsp;{Math.round(info.overallStability * 2.0)}/10
+					Stability:&nbsp;{roundNum(info.overallStability * 2.0)}/10
 				</span>
 				<span style={defenceStyle}>
-					Defence:&nbsp;{Math.round(info.overallDefence * 2.0)}/10
+					Defence:&nbsp;{roundNum(info.overallDefence * 2.0)}/10
 				</span>
 			</span>
 			<span className="oprDpr" style={oprDprStyle}>
-				{(Math.round(info.opr * 10.0) / 10.0).toString()}&#8203;/&#8203;
-				{(Math.round(info.dpr * 10.0) / 10.0).toString()}
+				{info.opr.toFixed(2)}&#8203;/&#8203;
+				{info.dpr.toFixed(2)}
 			</span>
 			<span className="matches" style={winLossStyle}>
-				{Math.round(info.matches).toString()}&#8203;/&#8203;
+				{roundNum(info.matches).toString()}&#8203;/&#8203;
 				{formatRatio(info.winCount, info.lossCount)}
 			</span>
 			<span className="score" style={scoreStyle}>
-				{Math.round(
+				{roundNum(
 					info.averageAutoScore +
 						info.averageTeleopScore +
 						info.averageClimbScore,
 				).toString()}{" "}
-				({Math.round(info.rankingPoints)})
+				({roundNum(info.rankingPoints)})
 			</span>
 		</div>
 	);
