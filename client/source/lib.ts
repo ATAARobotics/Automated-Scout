@@ -11,7 +11,12 @@ export interface TeamInfo {
 	averageTeleopLowGoals: number;
 	averageDefenceScore: number;
 	climbFailRate: number;
-	climbAttemptCounts: [number, number][];
+	climbAttemptCounts: [
+		[number, number],
+		[number, number],
+		[number, number],
+		[number, number]
+	];
 	climbBeforeEndgameRate: number;
 	opr: number;
 	dpr: number;

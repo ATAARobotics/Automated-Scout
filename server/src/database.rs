@@ -28,14 +28,19 @@ impl MatchIter {
 	}
 }
 
+// Check whether the given path is a valid match (whether it was scouted after the start of the competition).
+fn is_match_valid(match_info: &MatchInfo) -> bool {
+	match_info.last_modified_time > 1647129117000
+}
+
 impl Iterator for MatchIter {
 	type Item = Result<MatchInfo, DatabaseError>;
 
 	fn next(&mut self) -> Option<Self::Item> {
-		while let Some(next) = self.inner.next() {
+		for next in self.inner.by_ref() {
 			let (_key, value) = next.unwrap();
 			let value: MatchInfo = bincode::deserialize(&value).unwrap();
-			if value.last_modified_time > 1646410041797 {
+			if is_match_valid(&value) {
 				return Some(Ok(value));
 			}
 		}
@@ -56,6 +61,9 @@ impl Database {
 		))
 	}
 	pub fn write_match(&self, match_info: &MatchInfo) -> Result<(), DatabaseError> {
+		if !is_match_valid(match_info) {
+			return Ok(());
+		}
 		let id = Self::get_match_id(match_info);
 		if let Some(data) = self.backend.get(&id)? {
 			if let Ok(old_match_info) = bincode::deserialize::<MatchInfo>(&data) {

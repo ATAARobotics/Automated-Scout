@@ -194,9 +194,7 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		team.average_climb_score += climb_score;
 		let auto_shots =
 			match_info.auto.low_goal_shots as f32 + match_info.auto.high_goal_shots as f32;
-		let auto_balls = (match_info.auto.cells_acquired as f32 + 1.0
-			- match_info.auto.cells_dropped as f32)
-			.max(auto_shots);
+		let auto_balls = (match_info.auto.cells_acquired as f32 + 1.0).max(auto_shots);
 		if auto_balls > 0.0 {
 			team.average_auto_ball_efficiency += auto_shots / auto_balls;
 			team.auto_scoring_matches += 1;
@@ -205,9 +203,7 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		team.average_auto_high_goals += match_info.auto.high_goal_shots as f32;
 		let teleop_shots =
 			match_info.teleop.low_goal_shots as f32 + match_info.teleop.high_goal_shots as f32;
-		let teleop_balls = (match_info.teleop.cells_acquired as f32
-			- match_info.teleop.cells_dropped as f32)
-			.max(teleop_shots);
+		let teleop_balls = (match_info.teleop.cells_acquired as f32).max(teleop_shots);
 		if teleop_balls > 0.0 {
 			team.average_teleop_ball_efficiency += teleop_shots / teleop_balls;
 			team.teleop_scoring_matches += 1;
@@ -226,9 +222,11 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		if match_info.climb.started_before_endgame {
 			team.climb_before_endgame_rate += 1.0;
 		}
-		team.overall_speed += match_info.speed.unwrap_or(0.5) as f32;
-		team.overall_stability += match_info.stability.unwrap_or(0.5) as f32;
-		team.overall_defence += match_info.defence.unwrap_or(0.5) as f32;
+		team.overall_speed += match_info.speed as f32;
+		team.overall_stability += match_info.stability as f32;
+		if let Some(v) = match_info.defence {
+			team.overall_defence += v;
+		}
 		team.matches += 1;
 		matches_by_game
 			.entry((match_info.match_category, match_info.match_number))
@@ -279,6 +277,9 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 	}
 	for team_info in teams.values_mut() {
 		team_info.average_defence_score /= team_info.defended_teams as f32;
+		if team_info.defended_teams == 0 {
+			team_info.average_defence_score = 0.0;
+		}
 	}
 	let mut average = TeamInfo {
 		team_number: 0,
