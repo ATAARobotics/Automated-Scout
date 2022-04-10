@@ -133,7 +133,7 @@ impl MatchInfo {
 			self.is_primary_defence.to_string(),
 			self.was_broken.to_string(),
 			self.was_disabled.to_string(),
-			self.notes.clone(),
+			"\"".to_string() + &self.notes.replace("\n", "  ") + "\"",
 		]
 		.join(",") + "\n"
 	}

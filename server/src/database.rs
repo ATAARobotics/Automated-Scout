@@ -30,7 +30,7 @@ impl MatchIter {
 
 // Check whether the given path is a valid match (whether it was scouted after the start of the competition).
 fn is_match_valid(match_info: &MatchInfo) -> bool {
-	match_info.match_number != 0 && match_info.match_number < 100 && match_info.team_number != 0 && match_info.last_modified_time > 1647129117000
+	match_info.match_number != 0 && match_info.match_number < 100 && match_info.team_number != 0 && match_info.last_modified_time > 1648690000000
 }
 
 impl Iterator for MatchIter {

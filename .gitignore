@@ -2,3 +2,5 @@
 /client/dist
 /server/target
 *.bak~
+*.zip
+/server/start.sh
