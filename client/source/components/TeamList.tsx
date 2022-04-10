@@ -1,4 +1,7 @@
 import * as React from "react";
+import { Table, Column, HeaderCell, Cell, RowDataType } from "rsuite-table";
+import { CustomProvider } from "rsuite";
+import "rsuite/dist/rsuite.min.css";
 
 import { TeamInfo } from "../lib";
 
@@ -9,23 +12,13 @@ interface TeamListProps {
 }
 
 /**
- * Round a number to two decimal places
- *
- * @param num The number.
- * @returns The rounded number.
- */
-function roundNum(num: number): string {
-	return num.toFixed(2);
-}
-
-/**
  * Format a number between 0 and 1 as a percentage with one decimal place.
  *
  * @param num The number to format.
  * @returns The formatted percentage.
  */
 function formatPercent(num: number): string {
-	return (Math.round(num * 1000) / 10).toString() + "%";
+	return num.toFixed(1) + "%";
 }
 
 /**
@@ -88,152 +81,180 @@ function getColour(
 	}
 }
 
-/**
- * Render a single team's information.
- *
- * @param info The team's information.
- * @param idx The index of this row.
- * @param average The mean information for all teams, if present used to colourize this team.
- * @returns The rendered team.
- */
-function renderSingleTeam(
-	info: TeamInfo,
-	idx: number,
-	average?: TeamInfo | undefined,
-): JSX.Element {
-	let autoStyle: React.CSSProperties | undefined;
-	let teleopStyle: React.CSSProperties | undefined;
-	let climbStyle: React.CSSProperties | undefined;
-	let defenceScoreStyle: React.CSSProperties | undefined;
-	let speedStyle: React.CSSProperties | undefined;
-	let stabilityStyle: React.CSSProperties | undefined;
-	let defenceStyle: React.CSSProperties | undefined;
-	let oprDprStyle: React.CSSProperties | undefined;
-	let winLossStyle: React.CSSProperties | undefined;
-	let scoreStyle: React.CSSProperties | undefined;
-	if (average !== undefined) {
-		autoStyle = {
-			color: getColour(info.averageAutoScore, average.averageAutoScore, 6),
-		};
-		teleopStyle = {
-			color: getColour(
-				info.averageTeleopScore,
-				average.averageTeleopScore,
-				8,
-			),
-		};
-		climbStyle = {
-			color: getColour(info.averageClimbScore, average.averageClimbScore, 6),
-		};
-		defenceScoreStyle = {
-			color: getColour(
-				info.averageDefenceScore,
-				average.averageDefenceScore,
-				4,
-			),
-		};
-		speedStyle = {
-			color: getColour(info.overallSpeed, average.overallSpeed, 3),
-		};
-		stabilityStyle = {
-			color: getColour(info.overallStability, average.overallStability, 3),
-		};
-		defenceStyle = {
-			color: getColour(info.overallDefence, average.overallDefence, 3),
-		};
-		oprDprStyle = {
-			color: getColour(info.opr - info.dpr, average.opr - average.dpr, 1),
-		};
-		winLossStyle = {
-			color: getColour(info.winCount / info.lossCount, 1.0, 1),
-		};
-		scoreStyle = {
-			color: getColour(
-				info.averageAutoScore +
-					info.averageTeleopScore +
-					info.averageClimbScore +
-					info.averageDefenceScore,
-				average.averageAutoScore +
-					average.averageTeleopScore +
-					average.averageClimbScore +
-					average.averageDefenceScore,
-				20,
-			),
-		};
-	}
-	return (
-		<div key={idx} className={`teamRow ${idx % 2 === 0 ? "even" : "odd"}`}>
-			<span className="teamNumber">
-				{info.teamNumber === 0 ? "Average" : info.teamNumber}
-			</span>
-			<span className="autoScore" style={autoStyle}>
-				{roundNum(info.averageAutoScore)}&#32; (
-				{info.averageAutoScore > 0
-					? formatPercent(info.averageAutoBallEfficiency)
-					: "-"}
-				&nbsp;acc;{" "}
-				{formatRatio(info.averageAutoHighGoals, info.averageAutoLowGoals)}
-				&nbsp;h/l)
-			</span>
-			<span className="teleopScore" style={teleopStyle}>
-				{roundNum(info.averageTeleopScore)}&#32; (
-				{info.averageTeleopScore > 0
-					? formatPercent(info.averageTeleopBallEfficiency)
-					: "-"}
-				&nbsp;acc;{" "}
-				{formatRatio(
-					info.averageTeleopHighGoals,
-					info.averageTeleopLowGoals,
-				)}
-				&nbsp;h/l)
-			</span>
-			<span className="climbScore" style={climbStyle}>
-				{roundNum(info.averageClimbScore).toString()} (
-				{info.climbAttemptCounts
-					.map(([attempts, successes]) => {
-						if (attempts === 0) {
-							return "-";
-						}
-						return formatPercent(successes / attempts);
-					})
-					.join(", ")}
-				; {formatPercent(info.climbBeforeEndgameRate)}&nbsp;early)
-			</span>
-			<span className="defenceScore" style={defenceScoreStyle}>
-				{info.averageDefenceScore === 0
-					? "-"
-					: roundNum(info.averageDefenceScore).toString()}
-			</span>
-			<span className="general">
-				<span style={speedStyle}>
-					Speed:&nbsp;{roundNum(info.overallSpeed * 2.0)}/10
-				</span>
-				<span style={stabilityStyle}>
-					Stability:&nbsp;{roundNum(info.overallStability * 2.0)}/10
-				</span>
-				<span style={defenceStyle}>
-					Defence:&nbsp;{roundNum(info.overallDefence * 2.0)}/10
-				</span>
-			</span>
-			<span className="oprDpr" style={oprDprStyle}>
-				{info.opr.toFixed(2)}&#8203;/&#8203;
-				{info.dpr.toFixed(2)}
-			</span>
-			<span className="matches" style={winLossStyle}>
-				{roundNum(info.matches).toString()}&#8203;/&#8203;
-				{formatRatio(info.winCount, info.lossCount)}
-			</span>
-			<span className="score" style={scoreStyle}>
-				{roundNum(
-					info.averageAutoScore +
-						info.averageTeleopScore +
-						info.averageClimbScore,
-				).toString()}{" "}
-				({roundNum(info.rankingPoints)})
-			</span>
-		</div>
-	);
-}
+const order: [string, (match: TeamInfo) => string][] = [
+	[
+		"Team",
+		(match: TeamInfo) => match.teamNumber,
+		(match: TeamInfo) =>
+			(match.teamNumber === 0 ? "Avg." : match.teamNumber.toFixed(0)),
+		1,
+		"left",
+		false,
+	],
+	[
+		"Auto Sc.",
+		(match: TeamInfo) => match.averageAutoScore,
+		(match: TeamInfo) => match.averageAutoScore.toFixed(1),
+		0.75,
+		false,
+		5.0,
+	],
+	[
+		"Auto Acc",
+		(match: TeamInfo) => match.averageAutoBallEfficiency,
+		(match: TeamInfo) => formatPercent(match.averageAutoBallEfficiency),
+		1,
+		false,
+		5.0,
+	],
+	[
+		"Auto H:L",
+		(match: TeamInfo) =>
+			match.averageAutoHighGoals / match.averageAutoLowGoals,
+		(match: TeamInfo) =>
+			formatRatio(match.averageAutoHighGoals, match.averageAutoLowGoals),
+		1,
+		false,
+		5.0,
+	],
+	[
+		"Tele Sc.",
+		(match: TeamInfo) =>
+			match.averageAutoHighGoals / match.averageAutoLowGoals,
+		(match: TeamInfo) => match.averageTeleopScore.toFixed(1),
+		0.75,
+		false,
+		5.0,
+	],
+	[
+		"Tele Acc",
+		(match: TeamInfo) => match.averageTeleopBallEfficiency,
+		(match: TeamInfo) => formatPercent(match.averageTeleopBallEfficiency),
+		1,
+		false,
+		5.0,
+	],
+	[
+		"Tele H:L",
+		(match: TeamInfo) =>
+			match.averageTeleopHighGoals / match.averageTeleopLowGoals,
+		(match: TeamInfo) =>
+			formatRatio(match.averageTeleopHighGoals, match.averageTeleopLowGoals),
+		1,
+		false,
+		5.0,
+	],
+	[
+		"Climb Sc.",
+		(match: TeamInfo) => match.averageClimbScore,
+		(match: TeamInfo) => match.averageClimbScore.toFixed(1),
+		0.75,
+		false,
+		5.0,
+	],
+	[
+		"Climb Acc",
+		(match: TeamInfo) => 1.0 - match.climbFailRate,
+		(match: TeamInfo) =>
+			formatPercent(100.0 - match.climbFailRate * 100.0) +
+			" (" +
+			match.climbAttemptCounts
+				.map((n) => ((n[1] / n[0]) * 100).toFixed(0) + "%")
+				.join(", ") +
+			")",
+		3,
+		false,
+		5.0,
+	],
+	[
+		"Climb Erly.",
+		(match: TeamInfo) => match.climbBeforeEndgameRate,
+		(match: TeamInfo) => formatPercent(match.climbBeforeEndgameRate),
+		1,
+		false,
+		5.0,
+	],
+	[
+		"Speed",
+		(match: TeamInfo) => match.overallSpeed,
+		(match: TeamInfo) => match.overallSpeed.toFixed(1) + " / 5",
+		1,
+		false,
+		5.0,
+	],
+	[
+		"Stability",
+		(match: TeamInfo) => match.overallStability,
+		(match: TeamInfo) => match.overallStability.toFixed(1) + " / 5",
+		1,
+		false,
+		5.0,
+	],
+	[
+		"Defence",
+		(match: TeamInfo) => match.overallDefence,
+		(match: TeamInfo) => match.overallDefence.toFixed(1) + " / 5",
+		1,
+		false,
+		5.0,
+	],
+	[
+		"OPR",
+		(match: TeamInfo) => match.opr,
+		(match: TeamInfo) => match.opr.toFixed(1),
+		1,
+		false,
+		5.0,
+	],
+	[
+		"DPR",
+		(match: TeamInfo) => match.dpr,
+		(match: TeamInfo) => match.dpr.toFixed(1),
+		1,
+		false,
+		5.0,
+	],
+	[
+		"Matches",
+		(match: TeamInfo) => match.matches,
+		(match: TeamInfo) => match.matches.toFixed(0),
+		0.75,
+		false,
+		false,
+	],
+	[
+		"W:L",
+		(match: TeamInfo) => match.winCount / match.lossCount,
+		(match: TeamInfo) => formatRatio(match.winCount, match.lossCount),
+		1,
+		"right",
+		5.0,
+	],
+	[
+		"RP",
+		(match: TeamInfo) => match.rankingPoints,
+		(match: TeamInfo) => match.rankingPoints.toFixed(1),
+		0.5,
+		"right",
+		5.0,
+	],
+	[
+		"Avg. Sc.",
+		(match: TeamInfo) =>
+			match.averageAutoScore +
+			match.averageTeleopScore +
+			match.averageClimbScore,
+		(match: TeamInfo) =>
+			(
+				match.averageAutoScore +
+				match.averageTeleopScore +
+				match.averageClimbScore
+			).toFixed(1),
+		1,
+		"right",
+		5.0,
+	],
+];
 
 /**
  * Component to display a list of teams.
@@ -242,43 +263,80 @@ function renderSingleTeam(
  * @returns The component.
  */
 export default function TeamList(props: TeamListProps): React.ReactElement {
-	const averageTeam = props.data.reduce(
+	const [sortColumn, setSortColumn] = React.useState("Avg. Sc.");
+	const [sortType, setSortType] = React.useState<"desc" | "asc">("desc");
+	console.log(sortColumn, sortType);
+	const data = props.data
+		.map((row) =>
+			order.reduce(
+				(o, col) => ({
+					...o,
+					[col[0]]: { sortValue: col[1](row), prettyValue: col[2](row) },
+				}),
+				{},
+			),
+		)
+		.sort((a, b) => {
+			const diff = a[sortColumn].sortValue - b[sortColumn].sortValue;
+			if (sortType === "desc") {
+				return -diff;
+			}
+			return diff;
+		});
+	const averageTeam = data.reduce(
 		(p: undefined | TeamInfo, info) =>
-			p ?? (info.teamNumber === 0 ? info : undefined),
+			p ?? (info["Team"].sortValue === 0 ? info : undefined),
 		undefined,
 	);
 	return (
-		<div className="teamListContainer">
-			<div className="teamList pinned">
-				<div className="teamRow header">
-					<span className="teamNumber">Team</span>
-					<span className="autoScore">Auto Score (accuracy)</span>
-					<span className="teleopScore">Teleop Score (accuracy)</span>
-					<span className="climbScore">Climb Score (accuracy)</span>
-					<span className="defenceScore">Defence Score</span>
-					<span className="general">Overall</span>
-					<span className="oprDpr">OPR / DPR</span>
-					<span className="matches">Matches</span>
-					<span className="score">Score Contribution (RP)</span>
-				</div>
-				{props.data
-					.filter(
-						(info) =>
-							COMPARISON_TEAM_NUMBERS.indexOf(info.teamNumber) > -1,
-					)
-					.flatMap((info, idx) =>
-						renderSingleTeam(info, idx, averageTeam),
-					)}
+		<CustomProvider theme="dark">
+			<div className="teamListContainer">
+				<Table
+					wordWrap
+					headerHeight={80}
+					height={800}
+					data={data}
+					sortColumn={sortColumn}
+					sortType={sortType}
+					onSortColumn={(newSortColumn, newSortType) => {
+						setSortColumn(newSortColumn);
+						setSortType(newSortType);
+					}}
+				>
+					{order.map((col) => (
+						<Column
+							fixed={col[4]}
+							flexGrow={col[3]}
+							key={col[0]}
+							sortable
+						>
+							<HeaderCell>{col[0]}</HeaderCell>
+							<Cell dataKey={col[0]}>
+								{(
+									rowData: RowDataType,
+									rowIndex: number | undefined,
+								) => {
+									const val = data[rowIndex ?? 0][col[0]];
+									let colour = "inherit";
+									console.log(col[5]);
+									if (col[5] !== false) {
+										colour = getColour(
+											val.sortValue,
+											averageTeam[col[0]].sortValue,
+											col[5],
+										);
+									}
+									return (
+										<span style={{ color: colour }}>
+											{val.prettyValue}
+										</span>
+									);
+								}}
+							</Cell>
+						</Column>
+					))}
+				</Table>
 			</div>
-			<div className="teamList">
-				{props.data
-					.filter(
-						(info) => COMPARISON_TEAM_NUMBERS.indexOf(info.teamNumber) < 0,
-					)
-					.flatMap((info, idx) =>
-						renderSingleTeam(info, idx, averageTeam),
-					)}
-			</div>
-		</div>
+		</CustomProvider>
 	);
 }
