@@ -17,7 +17,7 @@ use futures_util::stream::StreamExt as _;
 use serde_json::json;
 use simplelog::TermLogger;
 
-use crate::data::MatchInfo;
+use crate::data::{Info, MatchInfo};
 use crate::database::Database;
 
 #[options("/api/push")]
@@ -37,16 +37,8 @@ async fn push_data(data: Data<Arc<Database>>, mut body: web::Payload) -> HttpRes
 		bytes.extend_from_slice(&item.unwrap());
 	}
 	let string = String::from_utf8(bytes.to_vec()).unwrap();
-	let matches: Vec<MatchInfo> = serde_json::from_str(&string).unwrap();
-	println!(
-		"Got data with teams: {}.",
-		matches
-			.iter()
-			.map(|m| m.team_number.to_string())
-			.collect::<Vec<_>>()
-			.join(", ")
-	);
-	if let Err(e) = data.merge_matches(&matches) {
+	let matches: Vec<Info> = serde_json::from_str(&string).unwrap();
+	if let Err(e) = data.merge_info(&matches) {
 		return HttpResponse::build(StatusCode::OK)
 			.content_type(ContentType::json())
 			.append_header((header::ACCESS_CONTROL_ALLOW_ORIGIN, "*"))
@@ -67,8 +59,7 @@ async fn pull_data(data: Data<Arc<Database>>) -> HttpResponse {
 		.content_type(ContentType::json())
 		.append_header((header::ACCESS_CONTROL_ALLOW_ORIGIN, "*"))
 		.body(
-			serde_json::to_string(&json!({"success": true, "data": data.get_match_list()}))
-				.unwrap(),
+			serde_json::to_string(&json!({"success": true, "data": data.get_info_list()})).unwrap(),
 		)
 }
 

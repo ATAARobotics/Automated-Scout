@@ -1,4 +1,4 @@
-use crate::{Database, MatchInfo};
+use crate::{Database, Info};
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
@@ -26,14 +26,14 @@ pub fn try_sync(database: &Database, url: &str) -> Result<(), String> {
 	serde_json::from_str::<WebResult<()>>(
 		&ureq::put(&format!("{}/api/push", url))
 			.set("Content-Type", "application/json")
-			.send_json(&database.get_match_list())
+			.send_json(&database.get_info_list())
 			.map_err(|e| e.to_string())?
 			.into_string()
 			.map_err(|e| e.to_string())?,
 	)
 	.map_err(|e| e.to_string())?
 	.0?;
-	let new_matches = serde_json::from_str::<WebResult<Vec<MatchInfo>>>(
+	let new_info = serde_json::from_str::<WebResult<Vec<Info>>>(
 		&ureq::get(&format!("{}/api/pull", url))
 			.call()
 			.map_err(|e| e.to_string())?
@@ -43,9 +43,7 @@ pub fn try_sync(database: &Database, url: &str) -> Result<(), String> {
 	.map_err(|e| e.to_string())?
 	.0?
 	.ok_or_else(|| "No data".to_string())?;
-	database
-		.merge_matches(&new_matches)
-		.map_err(|e| e.to_string())?;
+	database.merge_info(&new_info).map_err(|e| e.to_string())?;
 	ureq::get(&format!("{}/api/pull", url)).call().unwrap();
 	println!("Synchronized with {}.", url);
 	Ok(())
