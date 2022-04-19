@@ -318,7 +318,6 @@ export default function TeamList(props: TeamListProps): React.ReactElement {
 								) => {
 									const val = data[rowIndex ?? 0][col[0]];
 									let colour = "inherit";
-									console.log(col[5]);
 									if (col[5] !== false) {
 										colour = getColour(
 											val.sortValue,

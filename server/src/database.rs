@@ -39,7 +39,7 @@ impl RobotIter {
 	}
 }
 
-const COMP_START: u64 = 1650316000000;
+const COMP_START: u64 = 1648690000000;
 
 // Check whether the given match is a valid match (whether it was scouted after the start of the competition).
 fn is_match_valid(match_info: &MatchInfo) -> bool {
@@ -151,6 +151,7 @@ impl Database {
 	}
 	pub fn merge_info(&self, infos: &Vec<Info>) -> Result<(), DatabaseError> {
 		for info in infos {
+			println!("Info: {:?}", info);
 			self.write_info(info)?;
 		}
 		Ok(())

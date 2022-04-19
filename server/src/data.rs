@@ -23,7 +23,7 @@ impl Display for MatchType {
 	}
 }
 
-#[derive(Debug, Copy, Clone, Deserialize, Serialize)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum StartingLocation {
 	Left,
@@ -47,7 +47,7 @@ impl Display for StartingLocation {
 	}
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[serde(from = "u32")]
 #[serde(into = "u32")]
@@ -81,7 +81,7 @@ impl From<ShooterCapability> for u32 {
 	}
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[serde(from = "u32")]
 #[serde(into = "u32")]
@@ -121,7 +121,7 @@ impl From<ShooterPositions> for u32 {
 	}
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[serde(from = "u32")]
 #[serde(into = "u32")]
@@ -256,6 +256,12 @@ pub struct RobotInfo {
 pub enum Info {
 	MatchInfo(MatchInfo),
 	RobotInfo(RobotInfo),
+}
+
+impl Default for Info {
+	fn default() -> Self {
+		Info::MatchInfo(MatchInfo::default())
+	}
 }
 
 impl MatchInfo {
