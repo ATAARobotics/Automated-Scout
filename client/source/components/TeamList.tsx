@@ -5,12 +5,6 @@ import "rsuite/dist/rsuite.min.css";
 
 import { TeamInfo } from "../lib";
 
-const COMPARISON_TEAM_NUMBERS = [0, 4421];
-
-interface TeamListProps {
-	data: TeamInfo[];
-}
-
 /**
  * Format a number between 0 and 1 as a percentage with one decimal place.
  *
@@ -81,7 +75,14 @@ function getColour(
 	}
 }
 
-const order: [string, (match: TeamInfo) => string][] = [
+const order: [
+	string,
+	(match: TeamInfo) => number,
+	(match: TeamInfo) => string,
+	number,
+	"left" | "right" | false,
+	number | false
+][] = [
 	[
 		"Team",
 		(match: TeamInfo) => match.teamNumber,
@@ -212,7 +213,7 @@ const order: [string, (match: TeamInfo) => string][] = [
 		(match: TeamInfo) => match.dpr.toFixed(1),
 		1,
 		false,
-		5.0,
+		-5.0,
 	],
 	[
 		"Matches",
@@ -256,6 +257,15 @@ const order: [string, (match: TeamInfo) => string][] = [
 	],
 ];
 
+type TeamDisplay = {[p: string]: {sortValue: number, prettyValue: string}};
+
+interface TeamListProps {
+	pinnedTeams?: { [teamNumber: number]: boolean };
+	setPinnedTeam?: (teamNumber: number, pin: boolean) => void;
+	fillHeight?: boolean;
+	data: TeamInfo[];
+}
+
 /**
  * Component to display a list of teams.
  *
@@ -268,7 +278,7 @@ export default function TeamList(props: TeamListProps): React.ReactElement {
 	console.log(sortColumn, sortType);
 	const data = props.data
 		.map((row) =>
-			order.reduce(
+			order.reduce<TeamDisplay>(
 				(o, col) => ({
 					...o,
 					[col[0]]: { sortValue: col[1](row), prettyValue: col[2](row) },
@@ -283,26 +293,46 @@ export default function TeamList(props: TeamListProps): React.ReactElement {
 			}
 			return diff;
 		});
-	const averageTeam = data.reduce(
-		(p: undefined | TeamInfo, info) =>
+	const averageTeam = data.reduce<undefined | TeamDisplay>(
+		(p, info) =>
 			p ?? (info["Team"].sortValue === 0 ? info : undefined),
 		undefined,
 	);
 	return (
 		<CustomProvider theme="dark">
-			<div className="teamListContainer">
-				<Table
+			<Table
 					wordWrap
 					headerHeight={80}
-					height={800}
+					fillHeight={props.fillHeight ?? false}
 					data={data}
 					sortColumn={sortColumn}
 					sortType={sortType}
 					onSortColumn={(newSortColumn, newSortType) => {
 						setSortColumn(newSortColumn);
-						setSortType(newSortType);
+						setSortType(newSortType ?? "asc");
 					}}
 				>
+				{
+					(() => {
+						if (props.pinnedTeams !== undefined) {
+							return <Column fixed="left" flexGrow={0.5} key={"Pinned"}>
+								<HeaderCell>Pinned</HeaderCell>
+								<Cell>{
+									(rowData: RowDataType, rowIndex: number | undefined) => {
+										const canChange = rowIndex !== undefined && props.setPinnedTeam !== undefined;
+										const teamNumber = data[rowIndex ?? 0]["Team"].sortValue;
+										const pinned = rowIndex != undefined && ((props.pinnedTeams ?? {})[teamNumber] ?? false);
+										return <input type="checkbox" checked={pinned} onChange={ev => {
+											if (props.setPinnedTeam !== undefined) {
+												props.setPinnedTeam(teamNumber, ev.target.checked);
+											}
+										}} disabled={!canChange} />;
+									}
+								}</Cell>
+							</Column>;
+						}
+					})()
+				}
 					{order.map((col) => (
 						<Column
 							fixed={col[4]}
@@ -319,11 +349,13 @@ export default function TeamList(props: TeamListProps): React.ReactElement {
 									const val = data[rowIndex ?? 0][col[0]];
 									let colour = "inherit";
 									if (col[5] !== false) {
-										colour = getColour(
-											val.sortValue,
-											averageTeam[col[0]].sortValue,
-											col[5],
-										);
+										if (averageTeam) {
+											colour = getColour(
+												val.sortValue,
+												averageTeam[col[0]].sortValue,
+												col[5],
+											);
+										}
 									}
 									return (
 										<span style={{ color: colour }}>
@@ -335,7 +367,6 @@ export default function TeamList(props: TeamListProps): React.ReactElement {
 						</Column>
 					))}
 				</Table>
-			</div>
 		</CustomProvider>
 	);
 }

@@ -16,65 +16,11 @@ body {
 	height: calc(100vh - 5rem);
 }
 
-.teamList {
-	display: grid;
-	grid-template-columns: 1fr 2.5fr 2.5fr 4fr 1fr 4.5fr 1fr 1fr 1.5fr;
-	width: 100%;
-	overflow-x: hidden;
-	overflow-y: auto;
+.rootPage {
+	display: flex;
+	flex-direction: column;
 }
 
-.teamList.pinned {
-	overflow-y: hidden;
-}
-
-.teamList span {
-	padding: 1rem;
-}
-
-.teamList .teamNumber {
-	grid-column: 1;
-}
-
-.teamList .autoScore {
-	grid-column: 2;
-}
-
-.teamList .teleopScore {
-	grid-column: 3;
-}
-
-.teamList .climbScore {
-	grid-column: 4;
-}
-
-.teamList .defenceScore {
-	grid-column: 5;
-}
-
-.teamList .general {
-	grid-column: 6;
-}
-
-.teamList .oprDpr {
-	grid-column: 7;
-}
-
-.teamList .matches {
-	grid-column: 8;
-}
-
-.teamList .score {
-	grid-column: 9;
-}
-
-.teamListContainer {
-	display: grid;
-	height: 100%;
-	grid-template-rows: auto 1fr;
-	overflow: hidden;
-}
-
-.teamRow {
-	display: contents;
+.rootPage .rs-table {
+	width: 100% !important;
 }
