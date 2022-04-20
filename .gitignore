@@ -1,6 +1,8 @@
 /node_modules
 /client/dist
 /server/target
+/server/images
+/server/start.sh
+/server/matches.db
 *.bak~
 *.zip
-/server/start.sh

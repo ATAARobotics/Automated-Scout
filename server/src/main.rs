@@ -14,6 +14,7 @@ use actix_web::http::{header, StatusCode};
 use actix_web::web::Data;
 use actix_web::{get, options, put, web, App, HttpRequest, HttpResponse, HttpServer, Responder};
 use futures_util::stream::StreamExt as _;
+use serde::Deserialize;
 use serde_json::json;
 use simplelog::TermLogger;
 
@@ -84,6 +85,25 @@ async fn get_csv(data: Data<Arc<Database>>) -> HttpResponse {
 		.body(csv)
 }
 
+#[derive(Debug, Deserialize)]
+struct ImgQueryParams {
+	id: u64,
+}
+
+#[get("/api/img")]
+async fn get_img(params: web::Query<ImgQueryParams>) -> HttpResponse {
+	if let Ok(data) = std::fs::read(format!("images/bot-{}.jpeg", params.id)) {
+		HttpResponse::build(StatusCode::OK)
+			.content_type(ContentType::jpeg())
+			.append_header((header::ACCESS_CONTROL_ALLOW_ORIGIN, "*"))
+			.body(data)
+	} else {
+		HttpResponse::build(StatusCode::NOT_FOUND)
+			.append_header((header::ACCESS_CONTROL_ALLOW_ORIGIN, "*"))
+			.body("Bad image id.")
+	}
+}
+
 async fn get_index(_req: HttpRequest) -> impl Responder {
 	NamedFile::open_async("../client/assets/index.html").await
 }
@@ -127,6 +147,7 @@ async fn main() {
 			.service(pull_data)
 			.service(get_csv)
 			.service(get_analysis)
+			.service(get_img)
 			.service(Files::new("/dist", "../client/dist/").prefer_utf8(true))
 			.service(
 				Files::new("/", "../client/assets/")

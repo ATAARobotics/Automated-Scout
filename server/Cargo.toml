@@ -7,6 +7,7 @@ edition = "2018"
 actix-web = "4.0.0-rc.3"
 actix-files = "0.6.0-beta.16"
 argh = "0.1"
+base64 = "0.13"
 bincode = "1"
 futures-util = "0.3"
 log = { version = "0.4", features = ["max_level_trace", "release_max_level_info"] }

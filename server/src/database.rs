@@ -1,6 +1,8 @@
 use crate::data::{MatchInfo, RobotInfo};
 use crate::Info;
 use std::array::TryFromSliceError;
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
 use std::path::Path;
 use thiserror::Error;
 
@@ -85,6 +87,24 @@ impl Iterator for RobotIter {
 	}
 }
 
+fn fix_images(info: &RobotInfo) -> RobotInfo {
+	let mut info = info.clone();
+	std::fs::create_dir_all("images").unwrap();
+	for image in &mut info.images {
+		if &image[0..5] == "data:" {
+			let mut hasher = DefaultHasher::default();
+			image.hash(&mut hasher);
+			let id = hasher.finish();
+			let data = image.split(',').nth(1).unwrap();
+			let data = base64::decode(data).unwrap();
+			println!("Saving image {} with {} bytes of data.", id, data.len());
+			std::fs::write(&format!("images/bot-{}.jpeg", id,), data).unwrap();
+			*image = format!("{{AUTOSCOUT_URL}}/api/img?id={}", id);
+		}
+	}
+	info
+}
+
 impl Database {
 	pub fn open(file: &Path) -> Self {
 		Database {
@@ -133,7 +153,7 @@ impl Database {
 				}
 			}
 		}
-		let data = bincode::serialize(robot_info)?;
+		let data = bincode::serialize(&fix_images(robot_info))?;
 		self.backend.insert(id, data)?;
 		Ok(())
 	}
@@ -151,7 +171,6 @@ impl Database {
 	}
 	pub fn merge_info(&self, infos: &Vec<Info>) -> Result<(), DatabaseError> {
 		for info in infos {
-			println!("Info: {:?}", info);
 			self.write_info(info)?;
 		}
 		Ok(())
