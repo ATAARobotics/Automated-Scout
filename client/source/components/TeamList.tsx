@@ -3,6 +3,7 @@ import { Table, Column, HeaderCell, Cell, RowDataType } from "rsuite-table";
 
 import { TeamInfo } from "../lib";
 import { formatPercent, formatRatio, formatProbList } from "../util";
+import { Link } from "react-router-dom";
 
 /**
  * Get a color for a team's score relative to the average score.
@@ -393,11 +394,11 @@ export default function TeamList(props: TeamListProps): React.ReactElement {
 					);
 				}
 			})()}
-			{order.map((col) => (
+			{order.map((col, colIdx) => (
 				<Column
 					fixed={col[4]}
 					flexGrow={col[3]}
-					minWidth={80 * col[3]}
+					minWidth={100 * col[3]}
 					key={col[0]}
 					sortable
 				>
@@ -415,9 +416,19 @@ export default function TeamList(props: TeamListProps): React.ReactElement {
 									);
 								}
 							}
-							return (
-								<span style={{ color: colour }}>{val.prettyValue}</span>
-							);
+							if (colIdx === 0) {
+								return (
+									<Link to={`/team/${val.sortValue}`}>
+										{val.prettyValue}
+									</Link>
+								);
+							} else {
+								return (
+									<span style={{ color: colour }}>
+										{val.prettyValue}
+									</span>
+								);
+							}
 						}}
 					</Cell>
 				</Column>
