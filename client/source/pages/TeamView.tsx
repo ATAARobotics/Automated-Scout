@@ -35,10 +35,10 @@ function KeyValueBox(props: {
 function TeamView(): React.ReactElement {
 	const { team: teamString } = useParams();
 	const teamNumber = parseInt(teamString ?? "0");
-	const teamInfos = fetchState<TeamInfo[]>("/api/analysis")[0];
+	const teamInfos = fetchState<TeamInfo[]>("/api/analysis");
 	const fullTeamInfo = fetchState<FullTeamInfo>(
 		`/api/team_info?team=${teamNumber}`
-	)[0];
+	);
 	return (
 		<div className="teamView">
 			<TitleIcon

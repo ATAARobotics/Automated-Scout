@@ -77,6 +77,10 @@ export interface FetchError {
 	message: string;
 }
 
+const cachedResults: {
+	[key: string]: { error: false; result: unknown } | FetchError;
+} = {};
+
 /**
  * Fetch an api endpoint as a React useState object.
  *
@@ -85,35 +89,41 @@ export interface FetchError {
  */
 export function fetchState<T>(
 	path: string
-): [{ error: false; result: T } | FetchError | undefined, () => void] {
+): { error: false; result: T } | FetchError | undefined {
 	const [data, setData] = React.useState<
 		{ error: false; result: T } | FetchError
 	>();
-	const [shouldUpdate, setShouldUpdate] = React.useState(false);
 	React.useEffect(() => {
-		fetch(path)
-			.then((response) => {
-				if (response.ok) {
-					return response.json();
-				}
-				throw new Error("Response not ok.");
-			})
-			.then((rawResult) => {
-				const result = rawResult as
-					| { success: false }
-					| { success: true; data: T };
-				if (result.success) {
-					return result.data;
-				} else {
-					throw new Error("Response not success.");
-				}
-			})
-			.then((object) => {
-				setData({ error: false, result: object });
-			})
-			.catch((e) => {
-				setData({ error: true, message: e.message });
-			});
-	}, [shouldUpdate, path]);
-	return [data, () => setShouldUpdate(!shouldUpdate)];
+		if (cachedResults[path]) {
+			setData(
+				cachedResults[path] as { error: false; result: T } | FetchError
+			);
+		} else {
+			setData(undefined);
+			fetch(path)
+				.then((response) => {
+					if (response.ok) {
+						return response.json();
+					}
+					throw new Error("Response not ok.");
+				})
+				.then((rawResult) => {
+					const result = rawResult as
+						| { success: false }
+						| { success: true; data: T };
+					if (result.success) {
+						return result.data;
+					} else {
+						throw new Error("Response not success.");
+					}
+				})
+				.then((object) => {
+					setData({ error: false, result: object });
+				})
+				.catch((e) => {
+					setData({ error: true, message: e.message });
+				});
+		}
+	}, [path]);
+	return data;
 }

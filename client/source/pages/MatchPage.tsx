@@ -29,8 +29,8 @@ function TeamMatchInfo(
  */
 function MatchPage(): React.ReactElement {
 	let { type, number } = useParams();
-	const [matchData] = fetchState<MatchInfo>(`/api/match/${type}/${number}`);
-	const data = fetchState<TeamInfo[]>("/api/analysis")[0];
+	const matchData = fetchState<MatchInfo>(`/api/match/${type}/${number}`);
+	const data = fetchState<TeamInfo[]>("/api/analysis");
 
 	if (!type || !number) {
 		return <div>Error: match type or number not specified.</div>;

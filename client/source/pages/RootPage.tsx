@@ -22,7 +22,7 @@ function Overview(): React.ReactElement {
 	React.useEffect(() => {
 		localStorage.setItem("pinnedTeams", JSON.stringify(pinnedTeams));
 	}, [pinnedTeams]);
-	const data = fetchState<TeamInfo[]>("/api/analysis")[0];
+	const data = fetchState<TeamInfo[]>("/api/analysis");
 	const setPinnedTeam = (teamNumber: number, pinned: boolean) => {
 		setPinnedTeams({ ...pinnedTeams, [teamNumber]: pinned });
 	};
