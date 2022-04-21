@@ -38,7 +38,16 @@ async fn push_data(data: Data<Arc<Database>>, mut body: web::Payload) -> HttpRes
 		bytes.extend_from_slice(&item.unwrap());
 	}
 	let string = String::from_utf8(bytes.to_vec()).unwrap();
-	let matches: Vec<Info> = serde_json::from_str(&string).unwrap();
+	let matches_raw: Vec<serde_json::Value> = serde_json::from_str(&string).unwrap();
+    let mut matches = Vec::new();
+    for match_raw in matches_raw {
+        let match_str = serde_json::to_string(&match_raw).unwrap();
+        if let Ok(info_parsed) = serde_json::from_str::<Info>(&match_str) {
+            matches.push(info_parsed);
+        } else if let Ok(info_parsed) = serde_json::from_str::<MatchInfo>(&match_str) {
+            matches.push(Info::MatchInfo(info_parsed));
+        }
+    }
 	if let Err(e) = data.merge_info(&matches) {
 		return HttpResponse::build(StatusCode::OK)
 			.content_type(ContentType::json())

@@ -41,7 +41,7 @@ impl RobotIter {
 	}
 }
 
-const COMP_START: u64 = 1648690000000;
+const COMP_START: u64 = 1650480000000;
 
 // Check whether the given match is a valid match (whether it was scouted after the start of the competition).
 fn is_match_valid(match_info: &MatchInfo) -> bool {

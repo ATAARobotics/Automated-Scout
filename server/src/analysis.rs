@@ -470,22 +470,22 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 	}
 	let (tba_teams, tba_matches) = get_tba_data();
 	for team_info in teams.values_mut() {
-		let match_count = team_info.matches as f32;
+		let match_count = (team_info.matches as f32).max(1.0);
 		team_info.average_auto_score /= match_count;
 		team_info.average_teleop_score /= match_count;
 		team_info.average_climb_score /= match_count;
-		team_info.average_auto_ball_efficiency /= team_info.auto_scoring_matches as f32;
-		team_info.average_auto_low_goal_accuracy /= team_info.auto_low_goal_scoring_matches as f32;
+		team_info.average_auto_ball_efficiency /= (team_info.auto_scoring_matches as f32).max(1.0);
+		team_info.average_auto_low_goal_accuracy /= (team_info.auto_low_goal_scoring_matches as f32).max(1.0);
 		team_info.average_auto_high_goal_accuracy /=
-			team_info.auto_high_goal_scoring_matches as f32;
+			(team_info.auto_high_goal_scoring_matches as f32).max(1.0);
 		team_info.average_auto_high_goals /= match_count;
 		team_info.average_auto_low_goals /= match_count;
 		team_info.average_teleop_ball_efficiency /=
 			(team_info.teleop_scoring_matches as f32).max(1.0);
 		team_info.average_teleop_low_goal_accuracy /=
-			team_info.teleop_low_goal_scoring_matches as f32;
+			(team_info.teleop_low_goal_scoring_matches as f32).max(1.0);
 		team_info.average_teleop_high_goal_accuracy /=
-			team_info.teleop_high_goal_scoring_matches as f32;
+			(team_info.teleop_high_goal_scoring_matches as f32).max(1.0);
 		team_info.average_teleop_high_goals /= match_count;
 		team_info.average_teleop_low_goals /= match_count;
 		team_info.climb_before_endgame_rate /= match_count;
@@ -493,8 +493,8 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		team_info.overall_stability /= match_count;
 		team_info.overall_defence /= match_count;
 		team_info.climb_fail_rate /= match_count;
-		team_info.climb_complete_success_rate /= team_info.climb_attempts as f32;
-		team_info.climb_partial_success_rate /= team_info.climb_attempts as f32;
+		team_info.climb_complete_success_rate /= (team_info.climb_attempts as f32).max(1.0);
+		team_info.climb_partial_success_rate /= (team_info.climb_attempts as f32).max(1.0);
 		team_info.shoot_hub_rate /= match_count;
 		team_info.shoot_far_rate /= match_count;
 		team_info.start_left_rate /= match_count;
