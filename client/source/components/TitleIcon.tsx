@@ -2,7 +2,7 @@ import * as React from "react";
 
 interface TitleIconProps {
 	title: string;
-	icon: string;
+	icon?: string;
 }
 
 /**
@@ -18,7 +18,7 @@ function TitleIcon(props: TitleIconProps): React.ReactElement {
 			titleElement.innerHTML = props.title;
 		}
 		const iconElement = document.getElementById("window-icon");
-		if (iconElement instanceof HTMLLinkElement) {
+		if (props.icon && iconElement instanceof HTMLLinkElement) {
 			iconElement.href = "/" + props.icon;
 		}
 	}, [props.title, props.icon]);

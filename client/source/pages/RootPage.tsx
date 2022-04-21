@@ -3,6 +3,7 @@ import * as React from "react";
 import { fetchState } from "../util";
 import TeamList from "../components/TeamList";
 import { TeamInfo } from "../lib";
+import TitleIcon from "../components/TitleIcon";
 
 /**
  * Root page.
@@ -32,6 +33,7 @@ function Overview(): React.ReactElement {
 	} else {
 		return (
 			<div className="content rootPage">
+				<TitleIcon title="All Teams - Automated Scout 2022" />
 				<TeamList
 					pinnedTeams={pinnedTeams}
 					setPinnedTeam={setPinnedTeam}
