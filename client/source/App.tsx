@@ -1,7 +1,11 @@
 import * as React from "react";
 import { Routes, Route } from "react-router-dom";
 
+import { CustomProvider } from "rsuite";
+import "rsuite/dist/rsuite.min.css";
+
 import RootPage from "./pages/RootPage";
+import TeamView from "./pages/TeamView";
 import UnknownPage from "./pages/UnknownPage";
 
 /**
@@ -12,13 +16,16 @@ import UnknownPage from "./pages/UnknownPage";
 function App(): React.ReactElement {
 	return (
 		<div className="app">
-			<div className="topbar">
-				<h2>Automation McAutoface</h2>
-			</div>
-			<Routes>
-				<Route path="/" element={ <RootPage/> } />
-				<Route path="/*" element={ <UnknownPage/> } />
-			</Routes>
+			<CustomProvider theme="dark">
+				<div className="topbar">
+					<h2>Automation McAutoface</h2>
+				</div>
+				<Routes>
+					<Route path="/" element={ <RootPage/> } />
+					<Route path="/team/:team" element={ <TeamView/> } />
+					<Route path="/*" element={ <UnknownPage/> } />
+				</Routes>
+			</CustomProvider>
 		</div>
 	);
 }

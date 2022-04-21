@@ -17,6 +17,61 @@ export function toTitleCase(str: string): string {
 		.join(" ");
 }
 
+/**
+ * Format a number between 0 and 1 as a percentage with one decimal place.
+ *
+ * @param num The number to format.
+ * @returns The formatted percentage.
+ */
+export function formatPercent(num: number): string {
+	return (num * 100.0).toFixed(1) + "%";
+}
+
+/**
+ * Find the greatest common divisor of two numbers.
+ *
+ * @param a The first number.
+ * @param b The second number.
+ * @returns The greatest common divisor.
+ */
+function gcd(a: number, b: number): number {
+	if (b === 0) {
+		return a;
+	}
+	return gcd(b, a % b);
+}
+
+/**
+ * Format two numbers as a ratio.
+ * This simplifies the ratio by dividing by the greatest common factor.
+ *
+ * @param a The first (right) number.
+ * @param b The second (left) number.
+ * @returns The formatted ratio.
+ */
+export function formatRatio(a: number, b: number): string {
+	a = Math.floor(a);
+	b = Math.floor(b);
+	let gcf = gcd(a, b);
+	if (a === 0 || b === 0) {
+		gcf = 1;
+	}
+	return `${a / gcf}:${b / gcf}`;
+}
+
+/**
+ * Format a list of probabilities as a string with the name of the most likely.
+ */
+export function formatProbList(names: string[], probs: number[]): string {
+	let highest = 0;
+	for (let i = 0; i < probs.length; i++) {
+		if (probs[i] > probs[highest]) {
+			highest = i;
+		}
+	}
+	return `${formatPercent(probs[highest])} ${names[highest]}`;
+}
+
 export interface FetchError {
 	error: true;
 	message: string;

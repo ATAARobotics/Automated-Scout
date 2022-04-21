@@ -1,51 +1,8 @@
 import * as React from "react";
 import { Table, Column, HeaderCell, Cell, RowDataType } from "rsuite-table";
-import { CustomProvider } from "rsuite";
-import "rsuite/dist/rsuite.min.css";
 
 import { TeamInfo } from "../lib";
-
-/**
- * Format a number between 0 and 1 as a percentage with one decimal place.
- *
- * @param num The number to format.
- * @returns The formatted percentage.
- */
-function formatPercent(num: number): string {
-	return (num * 100.0).toFixed(1) + "%";
-}
-
-/**
- * Find the greatest common divisor of two numbers.
- *
- * @param a The first number.
- * @param b The second number.
- * @returns The greatest common divisor.
- */
-function gcd(a: number, b: number): number {
-	if (b === 0) {
-		return a;
-	}
-	return gcd(b, a % b);
-}
-
-/**
- * Format two numbers as a ratio.
- * This simplifies the ratio by dividing by the greatest common factor.
- *
- * @param a The first (right) number.
- * @param b The second (left) number.
- * @returns The formatted ratio.
- */
-function formatRatio(a: number, b: number): string {
-	a = Math.floor(a);
-	b = Math.floor(b);
-	let gcf = gcd(a, b);
-	if (a === 0 || b === 0) {
-		gcf = 1;
-	}
-	return `${a / gcf}:${b / gcf}`;
-}
+import { formatPercent, formatRatio, formatProbList } from "../util";
 
 /**
  * Get a color for a team's score relative to the average score.
@@ -73,19 +30,6 @@ function getColour(
 			100 + relativeScore * 50
 		}%)`;
 	}
-}
-
-/**
- * Format a list of probabilities as a string with the name of the most likely.
- */
-function formatProbList(names: string[], probs: number[]): string {
-	let highest = 0;
-	for (let i = 0; i < probs.length; i++) {
-		if (probs[i] > probs[highest]) {
-			highest = i;
-		}
-	}
-	return `${formatPercent(probs[highest])} ${names[highest]}`;
 }
 
 const order: [
@@ -398,91 +342,86 @@ export default function TeamList(props: TeamListProps): React.ReactElement {
 		undefined
 	);
 	return (
-		<CustomProvider theme="dark">
-			<Table
-				wordWrap
-				headerHeight={80}
-				fillHeight={props.fillHeight ?? false}
-				data={data}
-				sortColumn={sortColumn}
-				sortType={sortType}
-				onSortColumn={(newSortColumn, newSortType) => {
-					setSortColumn(newSortColumn);
-					setSortType(newSortType ?? "asc");
-				}}
-			>
-				{(() => {
-					if (props.pinnedTeams !== undefined) {
-						return (
-							<Column fixed="left" flexGrow={0.5} key={"Pinned"}>
-								<HeaderCell>Pinned</HeaderCell>
-								<Cell>
-									{(
-										rowData: RowDataType,
-										rowIndex: number | undefined
-									) => {
-										const canChange =
-											rowIndex !== undefined &&
-											props.setPinnedTeam !== undefined;
-										const teamNumber =
-											data[rowIndex ?? 0]["Team"].sortValue;
-										const pinned =
-											rowIndex != undefined &&
-											((props.pinnedTeams ?? {})[teamNumber] ??
-												false);
-										return (
-											<input
-												type="checkbox"
-												checked={pinned}
-												onChange={(ev) => {
-													if (props.setPinnedTeam !== undefined) {
-														props.setPinnedTeam(
-															teamNumber,
-															ev.target.checked
-														);
-													}
-												}}
-												disabled={!canChange}
-											/>
-										);
-									}}
-								</Cell>
-							</Column>
-						);
-					}
-				})()}
-				{order.map((col) => (
-					<Column
-						fixed={col[4]}
-						flexGrow={col[3]}
-						minWidth={80 * col[3]}
-						key={col[0]}
-						sortable
-					>
-						<HeaderCell>{col[0]}</HeaderCell>
-						<Cell dataKey={col[0]}>
-							{(rowData: RowDataType, rowIndex: number | undefined) => {
-								const val = data[rowIndex ?? 0][col[0]];
-								let colour = "inherit";
-								if (col[5] !== false) {
-									if (averageTeam) {
-										colour = getColour(
-											val.sortValue,
-											averageTeam[col[0]].sortValue,
-											col[5]
-										);
-									}
+		<Table
+			wordWrap
+			headerHeight={80}
+			fillHeight={props.fillHeight ?? false}
+			data={data}
+			sortColumn={sortColumn}
+			sortType={sortType}
+			onSortColumn={(newSortColumn, newSortType) => {
+				setSortColumn(newSortColumn);
+				setSortType(newSortType ?? "asc");
+			}}
+		>
+			{(() => {
+				if (props.pinnedTeams !== undefined) {
+					return (
+						<Column fixed="left" flexGrow={0.5} key={"Pinned"}>
+							<HeaderCell>Pinned</HeaderCell>
+							<Cell>
+								{(
+									rowData: RowDataType,
+									rowIndex: number | undefined
+								) => {
+									const canChange =
+										rowIndex !== undefined &&
+										props.setPinnedTeam !== undefined;
+									const teamNumber =
+										data[rowIndex ?? 0]["Team"].sortValue;
+									const pinned =
+										rowIndex != undefined &&
+										((props.pinnedTeams ?? {})[teamNumber] ?? false);
+									return (
+										<input
+											type="checkbox"
+											checked={pinned}
+											onChange={(ev) => {
+												if (props.setPinnedTeam !== undefined) {
+													props.setPinnedTeam(
+														teamNumber,
+														ev.target.checked
+													);
+												}
+											}}
+											disabled={!canChange}
+										/>
+									);
+								}}
+							</Cell>
+						</Column>
+					);
+				}
+			})()}
+			{order.map((col) => (
+				<Column
+					fixed={col[4]}
+					flexGrow={col[3]}
+					minWidth={80 * col[3]}
+					key={col[0]}
+					sortable
+				>
+					<HeaderCell>{col[0]}</HeaderCell>
+					<Cell dataKey={col[0]}>
+						{(rowData: RowDataType, rowIndex: number | undefined) => {
+							const val = data[rowIndex ?? 0][col[0]];
+							let colour = "inherit";
+							if (col[5] !== false) {
+								if (averageTeam) {
+									colour = getColour(
+										val.sortValue,
+										averageTeam[col[0]].sortValue,
+										col[5]
+									);
 								}
-								return (
-									<span style={{ color: colour }}>
-										{val.prettyValue}
-									</span>
-								);
-							}}
-						</Cell>
-					</Column>
-				))}
-			</Table>
-		</CustomProvider>
+							}
+							return (
+								<span style={{ color: colour }}>{val.prettyValue}</span>
+							);
+						}}
+					</Cell>
+				</Column>
+			))}
+		</Table>
 	);
 }

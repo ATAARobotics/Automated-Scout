@@ -21,6 +21,8 @@ pub struct FullMatchInfo {
 	alliance: AllianceColour,
 	blue_teams: Vec<(u32, Option<MatchInfo>)>,
 	red_teams: Vec<(u32, Option<MatchInfo>)>,
+	blue_score: i32,
+	red_score: i32,
 }
 
 #[derive(Debug, Default, Serialize)]
@@ -159,6 +161,8 @@ pub fn get_team_info(database: &Database, team_number: u32) -> FullTeamInfo {
 								)
 							})
 							.collect(),
+						blue_score: tba_match.alliances.blue.score,
+						red_score: tba_match.alliances.red.score,
 					});
 				}
 			}

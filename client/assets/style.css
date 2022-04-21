@@ -43,3 +43,30 @@ body {
 .teamList .defenceScore, .teamList .oprDpr, .teamList .matches, .teamList .score {
 	text-align: center;
 }
+
+.key-value-box {
+	display: grid;
+	margin: 0.5rem;
+	background-color: #808088;
+	border-radius: 0.5rem;
+}
+
+.key-value-box .key {
+	grid-column: 1;
+	padding: 0.5rem;
+	font-size: 1.5rem;
+	font-weight: bold;
+	border-right: solid 1px #e0e0e0;
+	box-shadow: #00000020 0.5rem 0 1rem 0.5rem;
+}
+
+.key-value-box .value {
+	grid-column: 2;
+	padding: 0.6rem;
+	font-size: 1.3rem;
+	vertical-align: center;
+}
+
+.images img {
+	border-radius: 0.5rem;
+}

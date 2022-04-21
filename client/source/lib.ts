@@ -1,3 +1,9 @@
+export type MatchType = "qualification" | "practice";
+export type ClimbLevel = 0 | 1 | 2 | 3 | 4;
+export type ShooterPositions = 0 | 1 | 2 | 3;
+export type BusinessLevel = 0 | 1 | 2;
+export type BallCapacity = 0 | 1 | 2;
+export type ShooterCapability = 0 | 1 | 2 | 3;
 export type DriveType = 0 | 1 | 2;
 
 export interface TeamInfo {
@@ -65,4 +71,81 @@ export interface TeamInfo {
 	originalShooterHub: boolean;
 	originalShooterFar: boolean;
 	matches: number;
+}
+
+export interface MatchInfo {
+	type: "match_info";
+	match: number;
+	matchCategory: MatchType;
+	team: number;
+	auto: {
+		preloadedCargo: boolean;
+		exitedTarmac: boolean;
+		startingLocation: "left" | "middle" | "right";
+		cellsAcquired: number;
+		lowGoalAttempts: number;
+		lowGoalShots: number;
+		highGoalAttempts: number;
+		highGoalShots: number;
+	};
+	teleop: {
+		cellsAcquired: number;
+		lowGoalAttempts: number;
+		lowGoalShots: number;
+		highGoalAttempts: number;
+		highGoalShots: number;
+	};
+	climb: {
+		startedBeforeEndgame: boolean;
+		highestAttempted: ClimbLevel;
+		highestScored: ClimbLevel;
+		fell: boolean;
+	};
+	speed: number;
+	stability: number;
+	defence: number | undefined;
+	isPrimaryDefence: boolean;
+	shooterPositions: ShooterPositions;
+	wasBroken: boolean;
+	wasDisabled: boolean;
+	notes: string;
+	lastModifiedTime: number;
+}
+
+export interface RobotInfo {
+	type: "robot_info";
+	scoutingTime: number;
+	team: number;
+	pit: {
+		busy: BusinessLevel | undefined;
+		pitPeople: number | undefined;
+		chaos: number | undefined;
+		friendly: boolean | undefined;
+		comments: string;
+	};
+	robot: {
+		autoBallCount: number | undefined;
+		ballCapacity: BallCapacity | undefined;
+		climbTime: number | undefined;
+		climbHeight: ClimbLevel | undefined;
+		climbEverybot: boolean | undefined;
+		shooterCapability: ShooterCapability | undefined;
+		shooterRange: ShooterPositions | undefined;
+		driveType: DriveType | undefined;
+		comments: string;
+	};
+	images: string[];
+	lastModifiedTime: number;
+}
+
+export interface FullTeamInfo {
+	teamNumber: number;
+	matches: {
+		time: number;
+		alliance: "blue" | "red";
+		blueTeams: [number, MatchInfo | null][];
+		redTeams: [number, MatchInfo | null][];
+	}[];
+	images: string[];
+	pitVisits: RobotInfo[];
 }
