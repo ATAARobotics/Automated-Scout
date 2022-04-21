@@ -25,6 +25,12 @@ body {
 	width: 100% !important;
 }
 
+.matchPage {
+	overflow: auto;
+	padding: 0.5rem;
+	height: 100%;
+}
+
 .teamView {
 	display: flex;
 	flex-direction: column;

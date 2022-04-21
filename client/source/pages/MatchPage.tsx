@@ -11,14 +11,56 @@ function TeamMatchInfo(
 ): React.ReactElement {
 	const teamData = data.find((t) => t.teamNumber === teamNumber);
 	if (!teamData) {
-		return <p>{teamNumber} - Not found!</p>;
+		return <p key={teamNumber}>{teamNumber} - Not found!</p>;
 	}
 	return (
-		<p>
-			{teamData.teamNumber} - {teamData.teamName} A:{" "}
-			{teamData.averageAutoScore}, T: {teamData.averageTeleopScore}, C:{" "}
-			{teamData.averageClimbScore}; OPR: {teamData.opr}, DPR: {teamData.dpr}
-		</p>
+		<>
+			<h3 key={`${teamNumber}-h3`}>
+				{teamData.teamNumber} - {teamData.teamName}
+			</h3>
+			<p key={`${teamNumber}-data`}>
+				Auto: {teamData.averageAutoScore}
+				<br></br>Tele: {teamData.averageTeleopScore}
+				<br></br>Climb: {teamData.averageClimbScore}
+				<br></br>Sum:{" "}
+				{teamData.averageAutoScore +
+					teamData.averageTeleopScore +
+					teamData.averageClimbScore}
+				<br></br>OPR: {teamData.opr}
+				<br></br>DPR: {teamData.dpr}
+			</p>
+		</>
+	);
+}
+
+function AllianceMatchTotal(
+	data: TeamInfo[],
+	teams: number[],
+	alliance: "red" | "blue"
+): React.ReactElement {
+	const teamDatas = teams
+		.map((teamNumber) => data.find((t) => t.teamNumber === teamNumber))
+		.filter((d): d is TeamInfo => !!d);
+	return (
+		<>
+			<h3 key={`totals-${alliance}-h3`}>Totals</h3>
+			<p key={`totals-${alliance}-data`}>
+				Auto: {teamDatas.reduce((acc, t) => acc + t.averageAutoScore, 0)}
+				<br></br>Tele:{" "}
+				{teamDatas.reduce((acc, t) => acc + t.averageTeleopScore, 0)}
+				<br></br>Climb:{" "}
+				{teamDatas.reduce((acc, t) => acc + t.averageClimbScore, 0)}
+				<br></br>Sum:{" "}
+				{teamDatas.reduce(
+					(acc, t) =>
+						acc +
+						t.averageAutoScore +
+						t.averageTeleopScore +
+						t.averageClimbScore,
+					0
+				)}
+			</p>
+		</>
 	);
 }
 
@@ -42,15 +84,25 @@ function MatchPage(): React.ReactElement {
 		return <div>Error: {data.message}</div>;
 	} else {
 		return (
-			<div className="content rootPage">
+			<div className="matchPage">
 				<TitleIcon title={`Automated Scout 2022 - ${type} #${number}`} />
-				<h2>Red Alliance</h2>
+				<h2 key="red">Red Alliance</h2>
 				{matchData.result.alliances.red.teams.map((team) =>
 					TeamMatchInfo(data.result, team)
 				)}
-				<h2>Blue Alliance</h2>
+				{AllianceMatchTotal(
+					data.result,
+					matchData.result.alliances.red.teams,
+					"red"
+				)}
+				<h2 key="blue">Blue Alliance</h2>
 				{matchData.result.alliances.blue.teams.map((team) =>
 					TeamMatchInfo(data.result, team)
+				)}
+				{AllianceMatchTotal(
+					data.result,
+					matchData.result.alliances.blue.teams,
+					"blue"
 				)}
 			</div>
 		);
