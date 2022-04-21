@@ -170,10 +170,12 @@ pub struct RawAlliancesData {
 pub struct RawMatchData {
 	pub comp_level: String,
 	pub match_number: u32,
+	pub set_number: u32,
 	pub alliances: RawAlliancesData,
 	pub time: u64,
 	pub predicted_time: Option<u64>,
 	pub actual_time: Option<u64>,
+	pub winning_alliance: String,
 }
 
 #[derive(Debug, Deserialize)]

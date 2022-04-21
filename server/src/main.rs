@@ -2,6 +2,7 @@ mod analysis;
 mod config;
 mod data;
 mod database;
+mod matches;
 mod server_sync;
 mod team_info;
 
@@ -21,6 +22,7 @@ use simplelog::TermLogger;
 
 use crate::data::{Info, MatchInfo};
 use crate::database::Database;
+use crate::matches::Match;
 
 #[options("/api/push")]
 async fn push_options(_params: ()) -> HttpResponse {
@@ -100,6 +102,24 @@ async fn get_team_info(
 		.body(serde_json::to_string(&json!({"success": true, "data": team})).unwrap())
 }
 
+#[get("/api/match/{type}/{number}")]
+async fn get_match(path_param: web::Path<(String, u8)>) -> HttpResponse {
+	let (match_type, number) = path_param.into_inner();
+	if match_type.to_lowercase() == "quals" {
+		if let Some(match_info) = matches::get_match_data(Match::Qualifier(number)) {
+			return HttpResponse::build(StatusCode::OK)
+				.content_type(ContentType::json())
+				.append_header((header::ACCESS_CONTROL_ALLOW_ORIGIN, "*"))
+				.body(
+					serde_json::to_string(&json!({"success": true, "data": match_info})).unwrap(),
+				);
+		}
+	}
+	HttpResponse::build(StatusCode::NOT_FOUND)
+		.append_header((header::ACCESS_CONTROL_ALLOW_ORIGIN, "*"))
+		.body("Bad match type.")
+}
+
 #[get("/api/csv")]
 async fn get_csv(data: Data<Arc<Database>>) -> HttpResponse {
 	let mut csv = MatchInfo::HEADER.to_string();
@@ -174,6 +194,7 @@ async fn main() {
 			.service(pull_data)
 			.service(get_csv)
 			.service(get_analysis)
+			.service(get_match)
 			.service(get_img)
 			.service(get_team_info)
 			.service(Files::new("/dist", "../client/dist/").prefer_utf8(true))
