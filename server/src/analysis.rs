@@ -10,6 +10,8 @@ use crate::Database;
 #[serde(rename_all = "camelCase")]
 pub struct TeamInfo {
 	pub team_number: u32,
+	pub team_name: Option<String>,
+	pub team_rookie_year: Option<u32>,
 	pub average_auto_score: f32,
 	pub average_teleop_score: f32,
 	pub average_climb_score: f32,
@@ -134,12 +136,21 @@ struct RawTeamStatusData {
 
 #[derive(Debug, Default)]
 struct TbaTeam {
+	team_name: String,
+	rookie_year: u32,
 	opr: f32,
 	dpr: f32,
 	matches_played: u32,
 	ranking_points: f32,
 	wins: u32,
 	losses: u32,
+}
+
+#[derive(Debug, Deserialize)]
+struct RawTeamInfo {
+	nickname: String,
+	team_number: u32,
+	rookie_year: u32,
 }
 
 #[derive(Debug, Deserialize)]
@@ -195,6 +206,28 @@ fn get_tba_data() -> (HashMap<u32, TbaTeam>, HashMap<(MatchType, u32), TbaMatch>
 						.entry(team_number)
 						.or_insert_with(TbaTeam::default)
 						.dpr = *dpr;
+				}
+			}
+		}
+	}
+
+	if let Ok(resp) = ureq::get(&format!(
+		"https://www.thebluealliance.com/api/v3/event/{}/teams",
+		option_env!("TBA_EVENT").unwrap_or("")
+	))
+	.set("X-TBA-Auth-Key", option_env!("TBA_AUTH_KEY").unwrap_or(""))
+	.call()
+	{
+		if resp.status() == 200 {
+			if let Ok(Ok(data)) = resp
+				.into_string()
+				.map(|data| serde_json::from_str::<Vec<RawTeamInfo>>(&data))
+			{
+				for team in data {
+					let team_number = team.team_number;
+					let mut tba_team = tba_data.entry(team_number).or_insert_with(TbaTeam::default);
+					tba_team.rookie_year = team.rookie_year;
+					tba_team.team_name = team.nickname;
 				}
 			}
 		}
@@ -475,7 +508,8 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		team_info.average_teleop_score /= match_count;
 		team_info.average_climb_score /= match_count;
 		team_info.average_auto_ball_efficiency /= (team_info.auto_scoring_matches as f32).max(1.0);
-		team_info.average_auto_low_goal_accuracy /= (team_info.auto_low_goal_scoring_matches as f32).max(1.0);
+		team_info.average_auto_low_goal_accuracy /=
+			(team_info.auto_low_goal_scoring_matches as f32).max(1.0);
 		team_info.average_auto_high_goal_accuracy /=
 			(team_info.auto_high_goal_scoring_matches as f32).max(1.0);
 		team_info.average_auto_high_goals /= match_count;
@@ -507,6 +541,8 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 			team_info.loss_count = tba_team.losses;
 			team_info.ranking_points = tba_team.ranking_points;
 			team_info.matches = tba_team.matches_played;
+			team_info.team_name = Some(tba_team.team_name.clone());
+			team_info.team_rookie_year = Some(tba_team.rookie_year);
 		}
 	}
 	for ((match_type, match_id), matches) in matches_by_game.iter() {
@@ -525,7 +561,8 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 					mut opponent_scores,
 					mut ally_scores,
 					mut defended_teams,
-				) = (0.0, 0.0, 0.0, 0);
+					mut allys,
+				) = (0.0, 0.0, 0.0, 0, 0);
 				for (other_team_number, teleop_score) in matches {
 					let other_team = &teams[other_team_number];
 					if opponents.contains(other_team_number) && other_team_number != team_number {
@@ -540,20 +577,31 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 						ally_scores += other_team.average_auto_score
 							+ other_team.average_teleop_score
 							+ other_team.average_climb_score;
+						allys += 1;
 					}
 				}
 				let team = teams.get_mut(team_number).unwrap();
-				team.average_luck_score += opponent_scores / (opponents.len() as f32)
-					- ally_scores / (alliance.len() as f32);
+				if defended_teams > 0 {
+					team.average_luck_score += ally_scores / (defended_teams as f32);
+				}
+				if allys > 0 {
+					team.average_luck_score -= opponent_scores / (allys as f32);
+				}
 				team.average_defence_score += average_defence_score;
 				team.defended_teams += defended_teams;
 			}
 		}
 	}
 	for team_info in teams.values_mut() {
-		team_info.average_defence_score /= team_info.defended_teams as f32;
-		if team_info.defended_teams == 0 {
-			team_info.average_defence_score = 0.0;
+		println!(
+			"{}, {}, {}",
+			team_info.average_defence_score,
+			team_info.defended_teams,
+			team_info.average_defence_score / team_info.defended_teams as f32
+		);
+		if team_info.defended_teams > 0 {
+			team_info.average_defence_score /= team_info.defended_teams as f32;
+			team_info.average_luck_score /= team_info.defended_teams as f32;
 		}
 	}
 	let mut average = TeamInfo {
@@ -565,18 +613,30 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		average.average_teleop_score += team_info.average_teleop_score;
 		average.average_climb_score += team_info.average_climb_score;
 		average.average_auto_ball_efficiency += team_info.average_auto_ball_efficiency;
+		average.average_auto_high_goal_accuracy += team_info.average_auto_high_goal_accuracy;
+		average.average_auto_low_goal_accuracy += team_info.average_auto_low_goal_accuracy;
 		average.average_auto_high_goals += team_info.average_auto_high_goals;
 		average.average_auto_low_goals += team_info.average_auto_low_goals;
 		average.average_teleop_ball_efficiency += team_info.average_teleop_ball_efficiency;
+		average.average_teleop_high_goal_accuracy += team_info.average_teleop_high_goal_accuracy;
+		average.average_teleop_low_goal_accuracy += team_info.average_teleop_low_goal_accuracy;
 		average.average_teleop_high_goals += team_info.average_teleop_high_goals;
 		average.average_teleop_low_goals += team_info.average_teleop_low_goals;
 		average.average_defence_score += team_info.average_defence_score;
+		average.average_luck_score += team_info.average_luck_score;
 		average.climb_fail_rate += team_info.climb_fail_rate;
+		average.climb_partial_success_rate += team_info.climb_partial_success_rate;
+		average.climb_complete_success_rate += team_info.climb_complete_success_rate;
+		average.climb_before_endgame_rate += team_info.climb_before_endgame_rate;
+		average.shoot_hub_rate += team_info.shoot_hub_rate;
+		average.shoot_far_rate += team_info.shoot_far_rate;
+		average.start_left_rate += team_info.start_left_rate;
+		average.start_right_rate += team_info.start_right_rate;
+		average.start_middle_rate += team_info.start_middle_rate;
 		for i in 0..4 {
 			average.climb_attempt_counts[i].0 += team_info.climb_attempt_counts[i].0;
 			average.climb_attempt_counts[i].1 += team_info.climb_attempt_counts[i].1;
 		}
-		average.climb_before_endgame_rate += team_info.climb_before_endgame_rate;
 		average.opr += team_info.opr;
 		average.dpr += team_info.dpr;
 		average.win_count += team_info.win_count;
@@ -588,20 +648,32 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		average.matches += team_info.matches;
 	}
 	{
-		let total_teams = teams.len() as u32;
-		let total_teams_f = teams.len() as f32;
+		let total_teams = (teams.len() as u32).max(1);
+		let total_teams_f = (teams.len() as f32).max(1.0);
 		average.average_auto_score /= total_teams_f;
 		average.average_teleop_score /= total_teams_f;
 		average.average_climb_score /= total_teams_f;
 		average.average_auto_ball_efficiency /= total_teams_f;
+		average.average_auto_high_goal_accuracy /= total_teams_f;
+		average.average_auto_low_goal_accuracy /= total_teams_f;
 		average.average_auto_high_goals /= total_teams_f;
 		average.average_auto_low_goals /= total_teams_f;
 		average.average_teleop_ball_efficiency /= total_teams_f;
+		average.average_teleop_high_goal_accuracy /= total_teams_f;
+		average.average_teleop_low_goal_accuracy /= total_teams_f;
 		average.average_teleop_high_goals /= total_teams_f;
 		average.average_teleop_low_goals /= total_teams_f;
 		average.average_defence_score /= total_teams_f;
+		average.average_luck_score /= total_teams_f;
 		average.climb_fail_rate /= total_teams_f;
+		average.climb_partial_success_rate /= total_teams_f;
+		average.climb_complete_success_rate /= total_teams_f;
 		average.climb_before_endgame_rate /= total_teams_f;
+		average.shoot_hub_rate /= total_teams_f;
+		average.shoot_far_rate /= total_teams_f;
+		average.start_left_rate /= total_teams_f;
+		average.start_right_rate /= total_teams_f;
+		average.start_middle_rate /= total_teams_f;
 		average.opr /= total_teams_f;
 		average.dpr /= total_teams_f;
 		average.win_count /= total_teams;

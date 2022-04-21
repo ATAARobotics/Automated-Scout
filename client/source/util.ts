@@ -29,7 +29,7 @@ export interface FetchError {
  * @returns The result as a useState object, and a function to refresh from the api.
  */
 export function fetchState<T>(
-	path: string,
+	path: string
 ): [{ error: false; result: T } | FetchError | undefined, () => void] {
 	const [data, setData] = React.useState<
 		{ error: false; result: T } | FetchError

@@ -2,6 +2,8 @@ export type DriveType = 0 | 1 | 2;
 
 export interface TeamInfo {
 	teamNumber: number;
+	teamName: string | null;
+	teamRookieYear: number | null;
 	averageAutoScore: number;
 	averageTeleopScore: number;
 	averageClimbScore: number;
@@ -30,7 +32,7 @@ export interface TeamInfo {
 	shootHubRate: number;
 	shootFarRate: number;
 	startLeftRate: number;
-	start_middleRate: number;
+	startMiddleRate: number;
 	startRightRate: number;
 	opr: number;
 	dpr: number;
@@ -47,7 +49,7 @@ export interface TeamInfo {
 	claimedAutoBallCount: number | null;
 	claimedBallCapacity: number | null;
 	claimedClimbTime: number | null;
-	claimedClimb_everybot: boolean;
+	claimedClimbEverybot: boolean;
 	claimedDriveType: DriveType | null;
 	claimedShooterLow: boolean;
 	claimedShooterHigh: boolean;
@@ -56,7 +58,7 @@ export interface TeamInfo {
 	originalAutoBallCount: number | null;
 	originalBallCapacity: number | null;
 	originalClimbTime: number | null;
-	originalClimb_everybot: boolean;
+	originalClimbEverybot: boolean;
 	originalDriveType: DriveType | null;
 	originalShooterLow: boolean;
 	originalShooterHigh: boolean;

@@ -12,7 +12,7 @@ import { TeamInfo } from "../lib";
  * @returns The formatted percentage.
  */
 function formatPercent(num: number): string {
-	return num.toFixed(1) + "%";
+	return (num * 100.0).toFixed(1) + "%";
 }
 
 /**
@@ -58,11 +58,11 @@ function formatRatio(a: number, b: number): string {
 function getColour(
 	score: number,
 	averageScore: number,
-	spread: number,
+	spread: number
 ): string {
 	const relativeScore = Math.min(
 		Math.max((score - averageScore) / spread, -1),
-		1,
+		1
 	);
 	if (relativeScore > 0) {
 		return `rgb(${100 - relativeScore * 50}%, 100%, ${
@@ -73,6 +73,19 @@ function getColour(
 			100 + relativeScore * 50
 		}%)`;
 	}
+}
+
+/**
+ * Format a list of probabilities as a string with the name of the most likely.
+ */
+function formatProbList(names: string[], probs: number[]): string {
+	let highest = 0;
+	for (let i = 0; i < probs.length; i++) {
+		if (probs[i] > probs[highest]) {
+			highest = i;
+		}
+	}
+	return `${formatPercent(probs[highest])} ${names[highest]}`;
 }
 
 const order: [
@@ -87,8 +100,9 @@ const order: [
 		"Team",
 		(match: TeamInfo) => match.teamNumber,
 		(match: TeamInfo) =>
-			(match.teamNumber === 0 ? "Avg." : match.teamNumber.toFixed(0)),
-		1,
+			(match.teamNumber === 0 ? "Avg." : match.teamNumber.toFixed(0)) +
+			(match.teamName !== null ? ` (${match.teamName})` : ""),
+		2,
 		"left",
 		false,
 	],
@@ -101,9 +115,14 @@ const order: [
 		5.0,
 	],
 	[
-		"Auto Acc",
-		(match: TeamInfo) => match.averageAutoBallEfficiency,
-		(match: TeamInfo) => formatPercent(match.averageAutoBallEfficiency),
+		"Tele Acc",
+		(match: TeamInfo) =>
+			match.averageAutoHighGoalAccuracy + match.averageAutoLowGoalAccuracy,
+		(match: TeamInfo) =>
+			formatPercent(match.averageAutoHighGoalAccuracy) +
+			"H, " +
+			formatPercent(match.averageAutoLowGoalAccuracy) +
+			"L",
 		1,
 		false,
 		5.0,
@@ -129,8 +148,14 @@ const order: [
 	],
 	[
 		"Tele Acc",
-		(match: TeamInfo) => match.averageTeleopBallEfficiency,
-		(match: TeamInfo) => formatPercent(match.averageTeleopBallEfficiency),
+		(match: TeamInfo) =>
+			match.averageTeleopHighGoalAccuracy +
+			match.averageTeleopLowGoalAccuracy,
+		(match: TeamInfo) =>
+			formatPercent(match.averageTeleopHighGoalAccuracy) +
+			"H, " +
+			formatPercent(match.averageTeleopLowGoalAccuracy) +
+			"L",
 		1,
 		false,
 		5.0,
@@ -157,10 +182,10 @@ const order: [
 		"Climb Acc",
 		(match: TeamInfo) => 1.0 - match.climbFailRate,
 		(match: TeamInfo) =>
-			formatPercent(100.0 - match.climbFailRate * 100.0) +
+			formatPercent(1.0 - match.climbFailRate) +
 			" (" +
 			match.climbAttemptCounts
-				.map((n) => ((n[1] / n[0]) * 100).toFixed(0) + "%")
+				.map((n) => ((n[1] / n[0]) * 100.0).toFixed(0) + "%")
 				.join(", ") +
 			")",
 		3,
@@ -174,6 +199,22 @@ const order: [
 		1,
 		false,
 		5.0,
+	],
+	[
+		"Defence Sc.",
+		(match: TeamInfo) => match.averageDefenceScore,
+		(match: TeamInfo) => match.averageDefenceScore.toFixed(1),
+		0.75,
+		false,
+		1.0,
+	],
+	[
+		"Luck Sc.",
+		(match: TeamInfo) => match.averageLuckScore,
+		(match: TeamInfo) => match.averageLuckScore.toFixed(1),
+		0.75,
+		false,
+		-1.0,
 	],
 	[
 		"Speed",
@@ -214,6 +255,65 @@ const order: [
 		1,
 		false,
 		-5.0,
+	],
+	[
+		"Start Loc.",
+		(match: TeamInfo) =>
+			match.startLeftRate * 3 +
+			match.startMiddleRate * 2 +
+			match.startRightRate,
+		(match: TeamInfo) =>
+			formatProbList(
+				["Left", "Mid", "Right"],
+				[match.startLeftRate, match.startMiddleRate, match.startRightRate]
+			),
+		1,
+		false,
+		false,
+	],
+	[
+		"Shoot Loc.",
+		(match: TeamInfo) => match.shootHubRate - match.shootFarRate,
+		(match: TeamInfo) =>
+			formatProbList(
+				["Hub", "Far"],
+				[match.shootHubRate, match.shootFarRate]
+			),
+		1,
+		false,
+		false,
+	],
+	[
+		"Friendly",
+		(match: TeamInfo) => (match.friendly ? 1.0 : 0.0),
+		(match: TeamInfo) => (match.friendly ? "Yes" : "No"),
+		1,
+		false,
+		0.01,
+	],
+	[
+		"Pit Peopl.",
+		(match: TeamInfo) => match.averagePeopleInPit,
+		(match: TeamInfo) => match.averagePeopleInPit.toFixed(0),
+		1,
+		false,
+		false,
+	],
+	[
+		"Pit Busy",
+		(match: TeamInfo) => match.averagePitBusiness,
+		(match: TeamInfo) => match.averagePitBusiness.toFixed(2),
+		1,
+		false,
+		false,
+	],
+	[
+		"Pit Chaos",
+		(match: TeamInfo) => match.averagePitChaos,
+		(match: TeamInfo) => match.averagePitChaos.toFixed(2),
+		1,
+		false,
+		false,
 	],
 	[
 		"Matches",
@@ -257,7 +357,7 @@ const order: [
 	],
 ];
 
-type TeamDisplay = {[p: string]: {sortValue: number, prettyValue: string}};
+type TeamDisplay = { [p: string]: { sortValue: number; prettyValue: string } };
 
 interface TeamListProps {
 	pinnedTeams?: { [teamNumber: number]: boolean };
@@ -283,8 +383,8 @@ export default function TeamList(props: TeamListProps): React.ReactElement {
 					...o,
 					[col[0]]: { sortValue: col[1](row), prettyValue: col[2](row) },
 				}),
-				{},
-			),
+				{}
+			)
 		)
 		.sort((a, b) => {
 			const diff = a[sortColumn].sortValue - b[sortColumn].sortValue;
@@ -294,79 +394,95 @@ export default function TeamList(props: TeamListProps): React.ReactElement {
 			return diff;
 		});
 	const averageTeam = data.reduce<undefined | TeamDisplay>(
-		(p, info) =>
-			p ?? (info["Team"].sortValue === 0 ? info : undefined),
-		undefined,
+		(p, info) => p ?? (info["Team"].sortValue === 0 ? info : undefined),
+		undefined
 	);
 	return (
 		<CustomProvider theme="dark">
 			<Table
-					wordWrap
-					headerHeight={80}
-					fillHeight={props.fillHeight ?? false}
-					data={data}
-					sortColumn={sortColumn}
-					sortType={sortType}
-					onSortColumn={(newSortColumn, newSortType) => {
-						setSortColumn(newSortColumn);
-						setSortType(newSortType ?? "asc");
-					}}
-				>
-				{
-					(() => {
-						if (props.pinnedTeams !== undefined) {
-							return <Column fixed="left" flexGrow={0.5} key={"Pinned"}>
+				wordWrap
+				headerHeight={80}
+				fillHeight={props.fillHeight ?? false}
+				data={data}
+				sortColumn={sortColumn}
+				sortType={sortType}
+				onSortColumn={(newSortColumn, newSortType) => {
+					setSortColumn(newSortColumn);
+					setSortType(newSortType ?? "asc");
+				}}
+			>
+				{(() => {
+					if (props.pinnedTeams !== undefined) {
+						return (
+							<Column fixed="left" flexGrow={0.5} key={"Pinned"}>
 								<HeaderCell>Pinned</HeaderCell>
-								<Cell>{
-									(rowData: RowDataType, rowIndex: number | undefined) => {
-										const canChange = rowIndex !== undefined && props.setPinnedTeam !== undefined;
-										const teamNumber = data[rowIndex ?? 0]["Team"].sortValue;
-										const pinned = rowIndex != undefined && ((props.pinnedTeams ?? {})[teamNumber] ?? false);
-										return <input type="checkbox" checked={pinned} onChange={ev => {
-											if (props.setPinnedTeam !== undefined) {
-												props.setPinnedTeam(teamNumber, ev.target.checked);
-											}
-										}} disabled={!canChange} />;
+								<Cell>
+									{(
+										rowData: RowDataType,
+										rowIndex: number | undefined
+									) => {
+										const canChange =
+											rowIndex !== undefined &&
+											props.setPinnedTeam !== undefined;
+										const teamNumber =
+											data[rowIndex ?? 0]["Team"].sortValue;
+										const pinned =
+											rowIndex != undefined &&
+											((props.pinnedTeams ?? {})[teamNumber] ??
+												false);
+										return (
+											<input
+												type="checkbox"
+												checked={pinned}
+												onChange={(ev) => {
+													if (props.setPinnedTeam !== undefined) {
+														props.setPinnedTeam(
+															teamNumber,
+															ev.target.checked
+														);
+													}
+												}}
+												disabled={!canChange}
+											/>
+										);
+									}}
+								</Cell>
+							</Column>
+						);
+					}
+				})()}
+				{order.map((col) => (
+					<Column
+						fixed={col[4]}
+						flexGrow={col[3]}
+						minWidth={80 * col[3]}
+						key={col[0]}
+						sortable
+					>
+						<HeaderCell>{col[0]}</HeaderCell>
+						<Cell dataKey={col[0]}>
+							{(rowData: RowDataType, rowIndex: number | undefined) => {
+								const val = data[rowIndex ?? 0][col[0]];
+								let colour = "inherit";
+								if (col[5] !== false) {
+									if (averageTeam) {
+										colour = getColour(
+											val.sortValue,
+											averageTeam[col[0]].sortValue,
+											col[5]
+										);
 									}
-								}</Cell>
-							</Column>;
-						}
-					})()
-				}
-					{order.map((col) => (
-						<Column
-							fixed={col[4]}
-							flexGrow={col[3]}
-							key={col[0]}
-							sortable
-						>
-							<HeaderCell>{col[0]}</HeaderCell>
-							<Cell dataKey={col[0]}>
-								{(
-									rowData: RowDataType,
-									rowIndex: number | undefined,
-								) => {
-									const val = data[rowIndex ?? 0][col[0]];
-									let colour = "inherit";
-									if (col[5] !== false) {
-										if (averageTeam) {
-											colour = getColour(
-												val.sortValue,
-												averageTeam[col[0]].sortValue,
-												col[5],
-											);
-										}
-									}
-									return (
-										<span style={{ color: colour }}>
-											{val.prettyValue}
-										</span>
-									);
-								}}
-							</Cell>
-						</Column>
-					))}
-				</Table>
+								}
+								return (
+									<span style={{ color: colour }}>
+										{val.prettyValue}
+									</span>
+								);
+							}}
+						</Cell>
+					</Column>
+				))}
+			</Table>
 		</CustomProvider>
 	);
 }
