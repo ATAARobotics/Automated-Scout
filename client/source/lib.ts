@@ -149,3 +149,18 @@ export interface FullTeamInfo {
 	images: string[];
 	pitVisits: RobotInfo[];
 }
+
+export interface AllianceInfo {
+	teams: number[];
+}
+
+export interface MatchInfo {
+	alliances: {
+		blue: AllianceInfo;
+		red: AllianceInfo;
+	};
+	comp_level: "qm" | "ss" | "qf" | "f" | "ef";
+	match_number: number;
+	set_number: number;
+	winning_alliance: "blue" | "red";
+}

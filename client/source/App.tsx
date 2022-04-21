@@ -6,7 +6,9 @@ import "rsuite/dist/rsuite.min.css";
 
 import RootPage from "./pages/RootPage";
 import TeamView from "./pages/TeamView";
+import MatchPage from "./pages/MatchPage";
 import UnknownPage from "./pages/UnknownPage";
+import SelectMatch from "./pages/SelectMatchPage";
 
 /**
  * Entry point component for the app.
@@ -23,6 +25,9 @@ function App(): React.ReactElement {
 				<Routes>
 					<Route path="/" element={ <RootPage/> } />
 					<Route path="/team/:team" element={ <TeamView/> } />
+					<Route path="/match" element={ <SelectMatch/> } />
+					<Route path="/match/:type" element={ <SelectMatch/> } />
+					<Route path="/match/:type/:number" element={ <MatchPage/> } />
 					<Route path="/*" element={ <UnknownPage/> } />
 				</Routes>
 			</CustomProvider>

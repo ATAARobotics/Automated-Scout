@@ -114,6 +114,6 @@ export function fetchState<T>(
 			.catch((e) => {
 				setData({ error: true, message: e.message });
 			});
-	}, [shouldUpdate]);
+	}, [shouldUpdate, path]);
 	return [data, () => setShouldUpdate(!shouldUpdate)];
 }
