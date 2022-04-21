@@ -154,22 +154,26 @@ struct RawTeamInfo {
 }
 
 #[derive(Debug, Deserialize)]
-struct RawAllianceData {
-	team_keys: Vec<String>,
-	surrogate_team_keys: Vec<String>,
+pub struct RawAllianceData {
+	pub score: i32,
+	pub team_keys: Vec<String>,
+	pub surrogate_team_keys: Vec<String>,
 }
 
 #[derive(Debug, Deserialize)]
-struct RawAlliancesData {
-	blue: RawAllianceData,
-	red: RawAllianceData,
+pub struct RawAlliancesData {
+	pub blue: RawAllianceData,
+	pub red: RawAllianceData,
 }
 
 #[derive(Debug, Deserialize)]
-struct RawMatchData {
-	comp_level: String,
-	match_number: u32,
-	alliances: RawAlliancesData,
+pub struct RawMatchData {
+	pub comp_level: String,
+	pub match_number: u32,
+	pub alliances: RawAlliancesData,
+	pub time: u64,
+	pub predicted_time: Option<u64>,
+	pub actual_time: Option<u64>,
 }
 
 #[derive(Debug, Deserialize)]

@@ -3,6 +3,7 @@ mod config;
 mod data;
 mod database;
 mod server_sync;
+mod team_info;
 
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -82,6 +83,23 @@ async fn get_analysis(data: Data<Arc<Database>>) -> HttpResponse {
 		.body(serde_json::to_string(&json!({"success": true, "data": teams})).unwrap())
 }
 
+#[derive(Debug, Deserialize)]
+struct TeamInfoQueryParams {
+	team: u32,
+}
+
+#[get("/api/team_info")]
+async fn get_team_info(
+	data: Data<Arc<Database>>,
+	params: web::Query<TeamInfoQueryParams>,
+) -> HttpResponse {
+	let team = team_info::get_team_info(&data, params.team);
+	HttpResponse::build(StatusCode::OK)
+		.content_type(ContentType::json())
+		.append_header((header::ACCESS_CONTROL_ALLOW_ORIGIN, "*"))
+		.body(serde_json::to_string(&json!({"success": true, "data": team})).unwrap())
+}
+
 #[get("/api/csv")]
 async fn get_csv(data: Data<Arc<Database>>) -> HttpResponse {
 	let mut csv = MatchInfo::HEADER.to_string();
@@ -157,6 +175,7 @@ async fn main() {
 			.service(get_csv)
 			.service(get_analysis)
 			.service(get_img)
+			.service(get_team_info)
 			.service(Files::new("/dist", "../client/dist/").prefer_utf8(true))
 			.service(
 				Files::new("/", "../client/assets/")
