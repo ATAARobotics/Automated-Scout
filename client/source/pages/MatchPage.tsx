@@ -14,23 +14,35 @@ function TeamMatchInfo(
 		return <p key={teamNumber}>{teamNumber} - Not found!</p>;
 	}
 	return (
-		<>
-			<h3 key={`${teamNumber}-h3`}>
-				{teamData.teamNumber} - {teamData.teamName}
-			</h3>
-			<p key={`${teamNumber}-data`}>
-				Scouted {teamData.matchesScouted} / {teamData.matchesPlayed}
-				<br></br>Auto: {teamData.averageAutoScore}
-				<br></br>Tele: {teamData.averageTeleopScore}
-				<br></br>Climb: {teamData.averageClimbScore}
-				<br></br>Sum:{" "}
-				{teamData.averageAutoScore +
+		<tr key={teamNumber}>
+			<td key="num">{teamData.teamNumber}</td>
+			<td key="name">{teamData.teamName}</td>
+			<td key="scouted" className="right">
+				{teamData.matchesScouted} / {teamData.matchesPlayed}
+			</td>
+			<td key="auto" className="right">
+				{teamData.averageAutoScore.toFixed(1)}
+			</td>
+			<td key="tele" className="right">
+				{teamData.averageTeleopScore.toFixed(1)}
+			</td>
+			<td key="climb" className="right">
+				{teamData.averageClimbScore.toFixed(1)}
+			</td>
+			<td key="total" className="right">
+				{(
+					teamData.averageAutoScore +
 					teamData.averageTeleopScore +
-					teamData.averageClimbScore}
-				<br></br>OPR: {teamData.opr}
-				<br></br>DPR: {teamData.dpr}
-			</p>
-		</>
+					teamData.averageClimbScore
+				).toFixed(1)}
+			</td>
+			<td key="opr" className="right">
+				{teamData.opr.toFixed(1)}
+			</td>
+			<td key="dpr" className="right">
+				{teamData.dpr.toFixed(1)}
+			</td>
+		</tr>
 	);
 }
 
@@ -43,25 +55,45 @@ function AllianceMatchTotal(
 		.map((teamNumber) => data.find((t) => t.teamNumber === teamNumber))
 		.filter((d): d is TeamInfo => !!d);
 	return (
-		<>
-			<h3 key={`totals-${alliance}-h3`}>Totals</h3>
-			<p key={`totals-${alliance}-data`}>
-				Auto: {teamDatas.reduce((acc, t) => acc + t.averageAutoScore, 0)}
-				<br></br>Tele:{" "}
-				{teamDatas.reduce((acc, t) => acc + t.averageTeleopScore, 0)}
-				<br></br>Climb:{" "}
-				{teamDatas.reduce((acc, t) => acc + t.averageClimbScore, 0)}
-				<br></br>Sum:{" "}
-				{teamDatas.reduce(
-					(acc, t) =>
-						acc +
-						t.averageAutoScore +
-						t.averageTeleopScore +
-						t.averageClimbScore,
-					0
-				)}
-			</p>
-		</>
+		<tr key={`totals-${alliance}`}>
+			<td key="name" colSpan={2}>
+				Totals
+			</td>
+			<td key="scouted"></td>
+			<td key="auto" className="right">
+				{teamDatas
+					.reduce((acc, t) => acc + t.averageAutoScore, 0)
+					.toFixed(1)}
+			</td>
+			<td key="tele" className="right">
+				{teamDatas
+					.reduce((acc, t) => acc + t.averageTeleopScore, 0)
+					.toFixed(1)}
+			</td>
+			<td key="climb" className="right">
+				{teamDatas
+					.reduce((acc, t) => acc + t.averageClimbScore, 0)
+					.toFixed(1)}
+			</td>
+			<td key="total" className="right">
+				{teamDatas
+					.reduce(
+						(acc, t) =>
+							acc +
+							t.averageAutoScore +
+							t.averageTeleopScore +
+							t.averageClimbScore,
+						0
+					)
+					.toFixed(1)}
+			</td>
+			<td key="opr" className="right">
+				{teamDatas.reduce((acc, t) => acc + t.opr, 0).toFixed(1)}
+			</td>
+			<td key="dpr" className="right">
+				{teamDatas.reduce((acc, t) => acc + t.dpr, 0).toFixed(1)}
+			</td>
+		</tr>
 	);
 }
 
@@ -81,24 +113,48 @@ function Matchup(props: {
 				<TitleIcon
 					title={`Automated Scout 2022 - Quals #${props.number}`}
 				/>
-				<h2 key="red">Red Alliance</h2>
-				{matchData.result.alliances.red.teams.map((team) =>
-					TeamMatchInfo(props.data, team)
-				)}
-				{AllianceMatchTotal(
-					props.data,
-					matchData.result.alliances.red.teams,
-					"red"
-				)}
-				<h2 key="blue">Blue Alliance</h2>
-				{matchData.result.alliances.blue.teams.map((team) =>
-					TeamMatchInfo(props.data, team)
-				)}
-				{AllianceMatchTotal(
-					props.data,
-					matchData.result.alliances.blue.teams,
-					"blue"
-				)}
+				<table>
+					<tbody>
+						<tr key="red-header">
+							<td key="name" colSpan={2}>
+								Red Alliance
+							</td>
+							<td key="scouted">Scouted</td>
+							<td key="auto">Auto</td>
+							<td key="tele">Tele</td>
+							<td key="climb">Climb</td>
+							<td key="total">Score</td>
+							<td key="opr">OPR</td>
+							<td key="dpr">DPR</td>
+						</tr>
+						{matchData.result.alliances.red.teams.map((team) =>
+							TeamMatchInfo(props.data, team)
+						)}
+						{AllianceMatchTotal(
+							props.data,
+							matchData.result.alliances.red.teams,
+							"red"
+						)}
+						<tr key="blue-header">
+							<td colSpan={2}>Blue Alliance</td>
+							<td key="scouted">Scouted</td>
+							<td key="auto">Auto</td>
+							<td key="tele">Tele</td>
+							<td key="climb">Climb</td>
+							<td key="total">Score</td>
+							<td key="opr">OPR</td>
+							<td key="dpr">DPR</td>
+						</tr>
+						{matchData.result.alliances.blue.teams.map((team) =>
+							TeamMatchInfo(props.data, team)
+						)}
+						{AllianceMatchTotal(
+							props.data,
+							matchData.result.alliances.blue.teams,
+							"blue"
+						)}
+					</tbody>
+				</table>
 			</>
 		);
 	}

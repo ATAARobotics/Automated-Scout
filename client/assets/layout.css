@@ -31,6 +31,24 @@ body {
 	height: 100%;
 }
 
+.matchPage input {
+	background-color: black;
+}
+
+.matchPage td, th {
+	padding: 3px;
+	border: 0.5px solid white;
+}
+
+.matchPage table {
+	border-collapse: collapse;;
+	border-spacing: 2px;
+}
+
+.matchPage .right {
+	text-align: right;
+}
+
 .teamView {
 	display: flex;
 	flex-direction: column;
