@@ -67,7 +67,8 @@ pub struct TeamInfo {
 	pub original_shooter_high: bool,
 	pub original_shooter_hub: bool,
 	pub original_shooter_far: bool,
-	pub matches: u32,
+	pub matches_played: u32,
+	pub matches_scouted: u32,
 	teleop_scoring_matches: u32,
 	auto_scoring_matches: u32,
 	climb_attempts: u32,
@@ -501,7 +502,7 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		if let Some(v) = match_info.defence {
 			team.overall_defence += v;
 		}
-		team.matches += 1;
+		team.matches_scouted += 1;
 		matches_by_game
 			.entry((match_info.match_category, match_info.match_number))
 			.or_insert(Vec::new())
@@ -509,7 +510,7 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 	}
 	let (tba_teams, tba_matches) = get_tba_data();
 	for team_info in teams.values_mut() {
-		let match_count = (team_info.matches as f32).max(1.0);
+		let match_count = (team_info.matches_scouted as f32).max(1.0);
 		team_info.average_auto_score /= match_count;
 		team_info.average_teleop_score /= match_count;
 		team_info.average_climb_score /= match_count;
@@ -546,7 +547,7 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 			team_info.win_count = tba_team.wins;
 			team_info.loss_count = tba_team.losses;
 			team_info.ranking_points = tba_team.ranking_points;
-			team_info.matches = tba_team.matches_played;
+			team_info.matches_played = tba_team.matches_played;
 			team_info.team_name = Some(tba_team.team_name.clone());
 			team_info.team_rookie_year = Some(tba_team.rookie_year);
 		}
@@ -651,7 +652,8 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		average.overall_stability += team_info.overall_stability;
 		average.overall_defence += team_info.overall_defence;
 		average.ranking_points += team_info.ranking_points;
-		average.matches += team_info.matches;
+		average.matches_scouted += team_info.matches_scouted;
+		average.matches_played += team_info.matches_played;
 	}
 	{
 		let total_teams = (teams.len() as u32).max(1);
@@ -688,7 +690,8 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		average.overall_stability /= total_teams_f;
 		average.overall_defence /= total_teams_f;
 		average.ranking_points /= total_teams_f;
-		average.matches /= total_teams;
+		average.matches_scouted /= total_teams;
+		average.matches_played /= total_teams;
 	}
 	let mut team_list: Vec<TeamInfo> = teams.into_values().collect();
 	team_list.push(average);

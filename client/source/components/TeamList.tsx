@@ -262,8 +262,16 @@ const order: [
 	],
 	[
 		"Matches",
-		(match: TeamInfo) => match.matches,
-		(match: TeamInfo) => match.matches.toFixed(0),
+		(match: TeamInfo) => match.matchesPlayed,
+		(match: TeamInfo) => match.matchesPlayed.toFixed(0),
+		0.75,
+		false,
+		false,
+	],
+	[
+		"Scouted",
+		(match: TeamInfo) => match.matchesScouted,
+		(match: TeamInfo) => match.matchesScouted.toFixed(0),
 		0.75,
 		false,
 		false,

@@ -70,7 +70,8 @@ export interface TeamInfo {
 	originalShooterHigh: boolean;
 	originalShooterHub: boolean;
 	originalShooterFar: boolean;
-	matches: number;
+	matchesScouted: number;
+	matchesPlayed: number;
 }
 
 export interface MatchInfo {

@@ -19,7 +19,8 @@ function TeamMatchInfo(
 				{teamData.teamNumber} - {teamData.teamName}
 			</h3>
 			<p key={`${teamNumber}-data`}>
-				Auto: {teamData.averageAutoScore}
+				Scouted {teamData.matchesScouted} / {teamData.matchesPlayed}
+				<br></br>Auto: {teamData.averageAutoScore}
 				<br></br>Tele: {teamData.averageTeleopScore}
 				<br></br>Climb: {teamData.averageClimbScore}
 				<br></br>Sum:{" "}
@@ -64,46 +65,75 @@ function AllianceMatchTotal(
 	);
 }
 
+function Matchup(props: {
+	data: TeamInfo[];
+	number: number;
+}): React.ReactElement {
+	const matchData = fetchState<MatchInfo>(`/api/match/Quals/${props.number}`);
+
+	if (matchData === undefined) {
+		return <div>Loading...</div>;
+	} else if (matchData.error) {
+		return <div>Error: {matchData.message}</div>;
+	} else {
+		return (
+			<>
+				<TitleIcon
+					title={`Automated Scout 2022 - Quals #${props.number}`}
+				/>
+				<h2 key="red">Red Alliance</h2>
+				{matchData.result.alliances.red.teams.map((team) =>
+					TeamMatchInfo(props.data, team)
+				)}
+				{AllianceMatchTotal(
+					props.data,
+					matchData.result.alliances.red.teams,
+					"red"
+				)}
+				<h2 key="blue">Blue Alliance</h2>
+				{matchData.result.alliances.blue.teams.map((team) =>
+					TeamMatchInfo(props.data, team)
+				)}
+				{AllianceMatchTotal(
+					props.data,
+					matchData.result.alliances.blue.teams,
+					"blue"
+				)}
+			</>
+		);
+	}
+}
+
 /**
  * Match page.
  *
  * @returns The page as a react component.
  */
 function MatchPage(): React.ReactElement {
-	let { type, number } = useParams();
-	const matchData = fetchState<MatchInfo>(`/api/match/${type}/${number}`);
 	const data = fetchState<TeamInfo[]>("/api/analysis");
+	let [selectedNumber, setSelectedNumber] = React.useState(1);
 
-	if (!type || !number) {
-		return <div>Error: match type or number not specified.</div>;
-	} else if (data === undefined || matchData === undefined) {
+	if (data === undefined) {
 		return <div>Loading...</div>;
-	} else if (matchData.error) {
-		return <div>Error: {matchData.message}</div>;
 	} else if (data.error) {
 		return <div>Error: {data.message}</div>;
 	} else {
 		return (
 			<div className="matchPage">
-				<TitleIcon title={`Automated Scout 2022 - ${type} #${number}`} />
-				<h2 key="red">Red Alliance</h2>
-				{matchData.result.alliances.red.teams.map((team) =>
-					TeamMatchInfo(data.result, team)
-				)}
-				{AllianceMatchTotal(
-					data.result,
-					matchData.result.alliances.red.teams,
-					"red"
-				)}
-				<h2 key="blue">Blue Alliance</h2>
-				{matchData.result.alliances.blue.teams.map((team) =>
-					TeamMatchInfo(data.result, team)
-				)}
-				{AllianceMatchTotal(
-					data.result,
-					matchData.result.alliances.blue.teams,
-					"blue"
-				)}
+				<label htmlFor="matchNumber">Match Number:</label>
+				<input
+					type="number"
+					min={1}
+					max={200}
+					id="matchNumber"
+					name="matchNumber"
+					value={selectedNumber}
+					onChange={(event) =>
+						setSelectedNumber(event.target.value as any)
+					}
+				></input>
+
+				<Matchup data={data.result} number={selectedNumber}></Matchup>
 			</div>
 		);
 	}
