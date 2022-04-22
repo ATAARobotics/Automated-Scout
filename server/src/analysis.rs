@@ -615,7 +615,11 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		team_number: 0,
 		..TeamInfo::default()
 	};
-	for team_info in teams.values() {
+	let mut team_list: Vec<TeamInfo> = teams
+		.into_values()
+		.filter(|t| t.matches_played > 0)
+		.collect();
+	for team_info in &team_list {
 		average.average_auto_score += team_info.average_auto_score;
 		average.average_teleop_score += team_info.average_teleop_score;
 		average.average_climb_score += team_info.average_climb_score;
@@ -656,8 +660,8 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		average.matches_played += team_info.matches_played;
 	}
 	{
-		let total_teams = (teams.len() as u32).max(1);
-		let total_teams_f = (teams.len() as f32).max(1.0);
+		let total_teams = (team_list.len() as u32).max(1);
+		let total_teams_f = (team_list.len() as f32).max(1.0);
 		average.average_auto_score /= total_teams_f;
 		average.average_teleop_score /= total_teams_f;
 		average.average_climb_score /= total_teams_f;
@@ -693,7 +697,6 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		average.matches_scouted /= total_teams;
 		average.matches_played /= total_teams;
 	}
-	let mut team_list: Vec<TeamInfo> = teams.into_values().collect();
 	team_list.push(average);
 	team_list.sort();
 	team_list
