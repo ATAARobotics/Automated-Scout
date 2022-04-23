@@ -100,8 +100,10 @@ function AllianceMatchTotal(
 function Matchup(props: {
 	data: TeamInfo[];
 	number: number;
+	matchType: String;
+	thing: number;
 }): React.ReactElement {
-	const matchData = fetchState<MatchInfo>(`/api/match/Quals/${props.number}`);
+	const matchData = fetchState<MatchInfo>(`/api/match2/${props.matchType}/${props.thing}/${props.number}`);
 
 	if (matchData === undefined) {
 		return <div>Loading...</div>;
@@ -167,6 +169,8 @@ function Matchup(props: {
  */
 function MatchPage(): React.ReactElement {
 	const data = fetchState<TeamInfo[]>("/api/analysis");
+	let [selectedType, setSelectedType] = React.useState("Quals");
+	let [selectedThing, setSelectedThing] = React.useState(1);
 	let [selectedNumber, setSelectedNumber] = React.useState(1);
 
 	if (data === undefined) {
@@ -176,6 +180,25 @@ function MatchPage(): React.ReactElement {
 	} else {
 		return (
 			<div className="matchPage">
+				<label htmlFor="matchType">Match Type:</label>
+				<input
+					id="matchType"
+					name="matchType"
+					value={selectedType}
+					onChange={(event) =>
+						setSelectedType(event.target.value as any)
+					}
+				></input>
+				<label htmlFor="matchThing">Match Thing:</label>
+				<input
+					type="number"
+					min={1}
+					max={4}
+					id="matchThing"
+					name="matchThing"
+					value={selectedThing}
+					onChange={(event) => setSelectedThing(event.target.value as any)}
+				></input>
 				<label htmlFor="matchNumber">Match Number:</label>
 				<input
 					type="number"
@@ -189,7 +212,12 @@ function MatchPage(): React.ReactElement {
 					}
 				></input>
 
-				<Matchup data={data.result} number={selectedNumber}></Matchup>
+				<Matchup
+					data={data.result}
+					matchType={selectedType}
+					thing={selectedThing}
+					number={selectedNumber}
+				></Matchup>
 			</div>
 		);
 	}

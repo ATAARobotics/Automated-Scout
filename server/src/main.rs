@@ -120,6 +120,35 @@ async fn get_match(path_param: web::Path<(String, u8)>) -> HttpResponse {
 		.body("Bad match type.")
 }
 
+#[get("/api/match2/{type}/{sub}/{number}")]
+async fn get_match_2(path_param: web::Path<(String, u8, u8)>) -> HttpResponse {
+	let (match_type, sub, number) = path_param.into_inner();
+	let match_type = if match_type.to_lowercase() == "quals" {
+		Match::Qualifier(number)
+	} else if match_type.to_lowercase() == "semis" {
+		Match::SemiFinals(sub, number)
+	} else if match_type.to_lowercase() == "quarters" {
+		Match::QuarterFinals(sub, number)
+	} else if match_type.to_lowercase() == "finals" {
+		Match::Finals(number)
+	} else {
+		return HttpResponse::build(StatusCode::NOT_FOUND)
+			.append_header((header::ACCESS_CONTROL_ALLOW_ORIGIN, "*"))
+			.body("Bad match type.");
+	};
+	if let Some(match_info) = matches::get_match_data(match_type) {
+		return HttpResponse::build(StatusCode::OK)
+			.content_type(ContentType::json())
+			.append_header((header::ACCESS_CONTROL_ALLOW_ORIGIN, "*"))
+			.body(
+				serde_json::to_string(&json!({"success": true, "data": match_info})).unwrap(),
+			);
+	}
+	HttpResponse::build(StatusCode::NOT_FOUND)
+		.append_header((header::ACCESS_CONTROL_ALLOW_ORIGIN, "*"))
+		.body("Bad match type.")
+}
+
 #[get("/api/csv")]
 async fn get_csv(data: Data<Arc<Database>>) -> HttpResponse {
 	let mut csv = MatchInfo::HEADER.to_string();
@@ -195,6 +224,7 @@ async fn main() {
 			.service(get_csv)
 			.service(get_analysis)
 			.service(get_match)
+			.service(get_match_2)
 			.service(get_img)
 			.service(get_team_info)
 			.service(Files::new("/dist", "../client/dist/").prefer_utf8(true))
