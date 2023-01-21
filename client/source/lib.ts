@@ -2,7 +2,7 @@ export type MatchType = "qualification" | "practice";
 export type ClimbLevel = 0 | 1 | 2 | 3 | 4;
 export type ShooterPositions = 0 | 1 | 2 | 3;
 export type BusinessLevel = 0 | 1 | 2;
-export type BallCapacity = 0 | 1 | 2;
+export type CubeCapacity = 0 | 1 | 2;
 export type ShooterCapability = 0 | 1 | 2 | 3;
 export type DriveType = 0 | 1 | 2;
 
@@ -125,7 +125,7 @@ export interface RobotInfo {
 	};
 	robot: {
 		autoBallCount: number | undefined;
-		ballCapacity: BallCapacity | undefined;
+		cubeCapacity: CubeCapacity | undefined;
 		climbTime: number | undefined;
 		climbHeight: ClimbLevel | undefined;
 		climbEverybot: boolean | undefined;

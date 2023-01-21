@@ -50,7 +50,7 @@ pub struct TeamInfo {
 	pub average_pit_chaos: f32,
 	pub friendly: bool,
 	pub claimed_auto_ball_count: Option<u32>,
-	pub claimed_ball_capacity: Option<u32>,
+	pub claimed_cube_capacity: Option<u32>,
 	pub claimed_climb_time: Option<u32>,
 	pub claimed_climb_everybot: bool,
 	pub claimed_drive_type: Option<DriveType>,
@@ -59,7 +59,7 @@ pub struct TeamInfo {
 	pub claimed_shooter_hub: bool,
 	pub claimed_shooter_far: bool,
 	pub original_auto_ball_count: Option<u32>,
-	pub original_ball_capacity: Option<u32>,
+	pub original_cube_capacity: Option<u32>,
 	pub original_climb_time: Option<u32>,
 	pub original_climb_everybot: bool,
 	pub original_drive_type: Option<DriveType>,
@@ -358,7 +358,7 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		team.average_pit_business /= total as f32;
 		team.average_pit_chaos /= total as f32;
 		team.claimed_auto_ball_count = last.robot.auto_ball_count;
-		team.claimed_ball_capacity = last.robot.ball_capacity;
+		team.claimed_cube_capacity = last.robot.cube_capacity;
 		team.claimed_climb_time = last.robot.climb_time;
 		team.claimed_climb_everybot = last.robot.climb_everybot.unwrap_or(false);
 		team.claimed_shooter_low = last.robot.shooter_capability == Some(ShooterCapability::Low)
@@ -371,7 +371,7 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 			|| last.robot.shooter_range == Some(ShooterPositions::Both);
 		team.claimed_drive_type = last.robot.drive_type;
 		team.original_auto_ball_count = first.robot.auto_ball_count;
-		team.original_ball_capacity = first.robot.ball_capacity;
+		team.original_cube_capacity = first.robot.cube_capacity;
 		team.original_climb_time = first.robot.climb_time;
 		team.original_climb_everybot = first.robot.climb_everybot.unwrap_or(false);
 		team.original_shooter_low = first.robot.shooter_capability == Some(ShooterCapability::Low)
@@ -421,15 +421,15 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		team.average_climb_score += climb_score;
 		let auto_shots =
 			match_info.auto.low_goal_attempts as f32 + match_info.auto.high_goal_attempts as f32;
-		let auto_balls = (if match_info.auto.preloaded_cargo {
+		let auto_cubes = (if match_info.auto.preloaded_cargo {
 			1.0
 		} else {
 			0.0
-		} + match_info.auto.cells_acquired as f32
+		} + match_info.auto.cubes_acquired as f32
 			+ 1.0)
 			.max(auto_shots);
-		if auto_balls > 0.0 {
-			team.average_auto_ball_efficiency += auto_shots / auto_balls;
+		if auto_cubes > 0.0 {
+			team.average_auto_ball_efficiency += auto_shots / auto_cubes;
 			team.auto_scoring_matches += 1;
 		}
 		if match_info.auto.low_goal_attempts > 0 {
@@ -689,6 +689,7 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		average.matches /= total_teams;
 	}
 	let mut team_list: Vec<TeamInfo> = teams.into_values().collect();
+	println!("{}", average.average_auto_score);
 	team_list.push(average);
 	team_list.sort();
 	team_list

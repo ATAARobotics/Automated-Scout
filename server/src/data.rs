@@ -159,7 +159,7 @@ pub struct Auto {
 	pub exited_tarmac: bool,
 	pub preloaded_cargo: bool,
 	pub starting_location: StartingLocation,
-	pub cells_acquired: u32,
+	pub cubes_acquired: u32,
 	pub low_goal_attempts: u32,
 	pub low_goal_shots: u32,
 	pub high_goal_attempts: u32,
@@ -226,7 +226,7 @@ pub struct Pit {
 #[serde(default)]
 pub struct Robot {
 	pub auto_ball_count: Option<u32>,
-	pub ball_capacity: Option<u32>,
+	pub cube_capacity: Option<u32>,
 	pub climb_time: Option<u32>,
 	pub climb_height: Option<u32>,
 	pub climb_everybot: Option<bool>,
@@ -273,7 +273,7 @@ impl MatchInfo {
 			self.team_number.to_string(),
 			self.auto.exited_tarmac.to_string(),
 			self.auto.starting_location.to_string(),
-			self.auto.cells_acquired.to_string(),
+			self.auto.cubes_acquired.to_string(),
 			self.auto.low_goal_attempts.to_string(),
 			self.auto.low_goal_shots.to_string(),
 			self.auto.high_goal_attempts.to_string(),

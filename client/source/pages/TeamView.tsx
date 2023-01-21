@@ -159,8 +159,8 @@ function TeamView(): React.ReactElement {
 													value={visit.pit.friendly}
 												/>
 												<KeyValueBox
-													label="Ball Capacity"
-													value={visit.robot.ballCapacity}
+													label="Cube Capacity"
+													value={visit.robot.cubeCapacity}
 												/>
 												<KeyValueBox
 													label="Autonomous Balls"
