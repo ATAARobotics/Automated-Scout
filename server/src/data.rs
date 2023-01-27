@@ -25,24 +25,24 @@ impl Display for MatchType {
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub enum StartingLocation {
-	Left,
-	Middle,
-	Right,
+pub enum ChargeStation {
+	Off,
+	On,
+	Charged,
 }
 
-impl Default for StartingLocation {
+impl Default for ChargeStation {
 	fn default() -> Self {
-		StartingLocation::Middle
+		ChargeStation::Off
 	}
 }
 
-impl Display for StartingLocation {
+impl Display for ChargeStation {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		match self {
-			StartingLocation::Left => write!(f, "Left"),
-			StartingLocation::Middle => write!(f, "Middle"),
-			StartingLocation::Right => write!(f, "Right"),
+			ChargeStation::Off => write!(f, "Off"),
+			ChargeStation::On => write!(f, "On"),
+			ChargeStation::Charged => write!(f, "Charged"),
 		}
 	}
 }
@@ -157,35 +157,28 @@ impl From<DriveType> for u32 {
 #[serde(default)]
 pub struct Auto {
 	pub exited_tarmac: bool,
-	pub preloaded_cargo: bool,
-	pub starting_location: StartingLocation,
-	pub cubes_acquired: u32,
-	pub low_goal_attempts: u32,
-	pub low_goal_shots: u32,
-	pub high_goal_attempts: u32,
-	pub high_goal_shots: u32,
+	pub charge_station: ChargeStation,
+	pub hybrid_scored: u32,
+	pub middle_cube_scored: u32,
+	pub middle_cone_scored: u32,
+	pub high_cube_scored: u32,
+	pub high_cone_scored: u32,
 }
 
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[serde(default)]
 pub struct Teleop {
-	pub cells_acquired: u32,
-	pub low_goal_attempts: u32,
-	pub low_goal_shots: u32,
-	pub high_goal_attempts: u32,
-	pub high_goal_shots: u32,
+	pub hybrid_scored: u32,
+	pub middle_cube_scored: u32,
+	pub middle_cone_scored: u32,
+	pub high_cube_scored: u32,
+	pub high_cone_scored: u32,
+	pub parked: bool,
+	pub charge_station: ChargeStation,
 }
 
-#[derive(Debug, Clone, Default, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-#[serde(default)]
-pub struct Climb {
-	pub highest_attempted: u32,
-	pub highest_scored: u32,
-	pub fell: bool,
-	pub started_before_endgame: bool,
-}
+
 
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -198,12 +191,10 @@ pub struct MatchInfo {
 	pub team_number: u32,
 	pub auto: Auto,
 	pub teleop: Teleop,
-	pub climb: Climb,
 	pub speed: f32,
 	pub stability: f32,
 	pub defence: Option<f32>,
 	pub is_primary_defence: bool,
-	pub shooter_positions: ShooterPositions,
 	pub was_broken: bool,
 	pub was_disabled: bool,
 	pub notes: String,
@@ -271,21 +262,23 @@ impl MatchInfo {
 			self.match_number.to_string(),
 			self.match_category.to_string(),
 			self.team_number.to_string(),
+			
 			self.auto.exited_tarmac.to_string(),
-			self.auto.starting_location.to_string(),
-			self.auto.cubes_acquired.to_string(),
-			self.auto.low_goal_attempts.to_string(),
-			self.auto.low_goal_shots.to_string(),
-			self.auto.high_goal_attempts.to_string(),
-			self.auto.high_goal_shots.to_string(),
-			self.teleop.cells_acquired.to_string(),
-			self.teleop.low_goal_attempts.to_string(),
-			self.teleop.low_goal_shots.to_string(),
-			self.teleop.high_goal_attempts.to_string(),
-			self.teleop.high_goal_shots.to_string(),
-			self.climb.highest_attempted.to_string(),
-			self.climb.highest_scored.to_string(),
-			self.climb.fell.to_string(),
+			self.auto.charge_station.to_string(),
+			self.auto.hybrid_scored.to_string(),
+			self.auto.middle_cube_scored.to_string(),
+			self.auto.middle_cone_scored.to_string(),
+			self.auto.high_cube_scored.to_string(),
+			self.auto.high_cone_scored.to_string(),
+
+			self.teleop.hybrid_scored.to_string(),
+			self.teleop.middle_cube_scored.to_string(),
+			self.teleop.middle_cone_scored.to_string(),
+			self.teleop.high_cube_scored.to_string(),
+			self.teleop.high_cone_scored.to_string(),
+			self.teleop.parked.to_string(),
+			self.teleop.charge_station.to_string(),
+			
 			self.speed.to_string(),
 			self.stability.to_string(),
 			self.defence

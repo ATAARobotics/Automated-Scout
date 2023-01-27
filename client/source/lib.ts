@@ -79,33 +79,28 @@ export interface MatchInfo {
 	matchCategory: MatchType;
 	team: number;
 	auto: {
-		preloadedCargo: boolean;
 		exitedTarmac: boolean;
-		startingLocation: "left" | "middle" | "right";
-		cellsAcquired: number;
-		lowGoalAttempts: number;
-		lowGoalShots: number;
-		highGoalAttempts: number;
-		highGoalShots: number;
+		chargeStation: "off" | "on" | "balanced";
+		hybridScored: number;
+		middleCubeScored: number;
+		middleConeScored: number;
+		highCubeScored: number;
+		highConeScored: number;
 	};
 	teleop: {
-		cellsAcquired: number;
-		lowGoalAttempts: number;
-		lowGoalShots: number;
-		highGoalAttempts: number;
-		highGoalShots: number;
+		hybridScored: number;
+		middleCubeScored: number;
+		middleConeScored: number;
+		highCubeScored: number;
+		highConeScored: number;
+		parked: boolean;
+		chargeStation: "off" | "on" | "balanced";
 	};
-	climb: {
-		startedBeforeEndgame: boolean;
-		highestAttempted: ClimbLevel;
-		highestScored: ClimbLevel;
-		fell: boolean;
-	};
+	
 	speed: number;
 	stability: number;
 	defence: number | undefined;
 	isPrimaryDefence: boolean;
-	shooterPositions: ShooterPositions;
 	wasBroken: boolean;
 	wasDisabled: boolean;
 	notes: string;

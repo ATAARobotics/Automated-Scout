@@ -14,29 +14,36 @@ pub struct TeamInfo {
 	pub team_rookie_year: Option<u32>,
 	pub average_auto_score: f32,
 	pub average_teleop_score: f32,
-	pub average_climb_score: f32,
-	pub average_auto_ball_efficiency: f32,
-	pub average_auto_high_goal_accuracy: f32,
-	pub average_auto_low_goal_accuracy: f32,
-	pub average_auto_high_goals: f32,
-	pub average_auto_low_goals: f32,
-	pub average_teleop_ball_efficiency: f32,
-	pub average_teleop_high_goal_accuracy: f32,
-	pub average_teleop_low_goal_accuracy: f32,
-	pub average_teleop_high_goals: f32,
-	pub average_teleop_low_goals: f32,
+	pub average_auto_hybrid_score: f32,
+	pub average_auto_middle_score: f32,
+	pub average_auto_high_score: f32,
+	pub average_auto_cone_score: f32,
+	pub average_auto_cube_score: f32,
+	pub average_auto_middle_cube_score: f32,
+	pub average_auto_middle_cone_score: f32,
+	pub average_auto_high_cube_score: f32,
+	pub average_auto_high_cone_score: f32,
+	pub average_teleop_hybrid_score: f32,
+	pub average_teleop_middle_score: f32,
+	pub average_teleop_high_score: f32,
+	pub average_teleop_middle_cube_score: f32,
+	pub average_teleop_middle_cone_score: f32,
+	pub average_teleop_high_cube_score: f32,
+	pub average_teleop_high_cone_score: f32,
 	pub average_defence_score: f32,
 	pub average_luck_score: f32,
-	pub climb_fail_rate: f32,
-	pub climb_partial_success_rate: f32,
-	pub climb_complete_success_rate: f32,
-	pub climb_attempt_counts: [(u32, u32); 4],
-	pub climb_before_endgame_rate: f32,
-	pub shoot_hub_rate: f32,
-	pub shoot_far_rate: f32,
-	pub start_left_rate: f32,
-	pub start_middle_rate: f32,
-	pub start_right_rate: f32,
+	pub average_cone_score: f32,
+	pub average_cube_score: f32,
+	pub average_hybrid_score: f32,
+	pub average_middle_score: f32,
+	pub average_high_score: f32,
+	pub charge_station_auto_off: f32,
+	pub charge_station_auto_on: f32,
+	pub charge_station_auto_charged: f32,
+	pub charge_station_teleop_off: f32,
+	pub charge_station_teleop_on: f32,
+	pub charge_station_teleop_charged: f32,
+	pub parked: f32
 	pub opr: f32,
 	pub dpr: f32,
 	pub win_count: u32,
@@ -70,12 +77,13 @@ pub struct TeamInfo {
 	pub matches: u32,
 	teleop_scoring_matches: u32,
 	auto_scoring_matches: u32,
-	climb_attempts: u32,
 	defended_teams: u32,
-	auto_low_goal_scoring_matches: u32,
-	auto_high_goal_scoring_matches: u32,
-	teleop_low_goal_scoring_matches: u32,
-	teleop_high_goal_scoring_matches: u32,
+	auto_hybrid_scoring_matches: u32,
+	auto_medium_scoring_matches: u32,
+	auto_high_scoring_matches: u32
+	teleop_hybrid_scoring_matches: u32,
+	teleop_medium_scoring_matches: u32,
+	teleop_high_scoring_matches: u32,
 }
 
 impl TeamInfo {
@@ -92,9 +100,9 @@ impl Eq for TeamInfo {}
 
 impl PartialOrd for TeamInfo {
 	fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-		(other.average_auto_score + other.average_teleop_score + other.average_climb_score)
+		(other.average_auto_score + other.average_teleop_score)
 			.partial_cmp(
-				&(self.average_auto_score + self.average_teleop_score + self.average_climb_score),
+				&(self.average_auto_score + self.average_teleop_score),
 			)
 	}
 }
@@ -390,110 +398,118 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		let team = teams
 			.entry(match_info.team_number)
 			.or_insert_with(|| TeamInfo::new(match_info.team_number));
-		if match_info.auto.starting_location == StartingLocation::Left {
-			team.start_left_rate += 1.0;
+		if match_info.auto.charge_station == ChargeStation::Off {
+			team.charge_station_auto_off += 1.0;
 		}
-		if match_info.auto.starting_location == StartingLocation::Middle {
-			team.start_middle_rate += 1.0;
+		if match_info.auto.charge_station == ChargeStation::On {
+			team.charge_station_auto_on += 1.0;
 		}
-		if match_info.auto.starting_location == StartingLocation::Right {
-			team.start_right_rate += 1.0;
+		if match_info.auto.charge_station == ChargeStation::Charged {
+			team.charge_station_auto_charged += 1.0;
 		}
-		let auto_score = match_info.auto.low_goal_shots as f32 * 2.0
-			+ match_info.auto.high_goal_shots as f32 * 4.0
+		if match_info.teleop.charge_station == ChargeStation::Off {
+			team.charge_station_teleop_off += 1.0;
+		}
+		if match_info.teleop.charge_station == ChargeStation::On {
+			team.charge_station_teleop_on += 1.0;
+		}
+		if match_info.teleop.charge_station == ChargeStation::Charged {
+			team.charge_station_teleop_charged += 1.0;
+		}
+		
+
+
+		let auto_score = match_info.auto_hybrid_scored as f32 * 3.0
+			+ match_info.auto.middle_cube_scored as f32 * 4.0
+			+ match_info.auto.middle_cone_scored as f32 * 4.0
+			+ match_info.auto.high_cube_scored as f32 * 6.0
+			+ match_info.auto.high_cone_scored as f32 * 6.0
+
 			+ if match_info.auto.exited_tarmac {
-				2.0
+				3.0
 			} else {
 				0.0
 			};
-		let teleop_score = match_info.teleop.low_goal_shots as f32
-			+ match_info.teleop.high_goal_shots as f32 * 2.0;
-		let climb_score = match match_info.climb.highest_scored {
-			0 => 0.0,
-			1 => 4.0,
-			2 => 6.0,
-			3 => 10.0,
-			4 => 15.0,
-			_ => unreachable!(),
-		};
+
+			+ if match_info.auto.charge_station == ChargeStation::On{
+				8.0
+			} else if match_info.auto.charge_station == ChargeStation::Charged {
+				12.0
+			} else {
+				0.0
+			};	
+
+			let teleop_score = match_info.teleop_hybrid_scored as f32 * 3.0
+			+ match_info.teleop.middle_cube_scored as f32 * 4.0
+			+ match_info.teleop.middle_cone_scored as f32 * 4.0
+			+ match_info.teleop.high_cube_scored as f32 * 6.0
+			+ match_info.teleop.high_cone_scored as f32 * 6.0
+
+			+ if match_info.teleop.charge_station == ChargeStation::On{
+				8.0
+			} else if match_info.teleop.charge_station == ChargeStation::Charged {
+				12.0
+			} else if match_info.teleop.parked{
+				2.0
+			} else {
+				0.0
+			};	
+
+		team.parked += match_info.teleop.parked;
+
 		team.average_auto_score += auto_score;
 		team.average_teleop_score += teleop_score;
-		team.average_climb_score += climb_score;
-		let auto_shots =
-			match_info.auto.low_goal_attempts as f32 + match_info.auto.high_goal_attempts as f32;
-		let auto_cubes = (if match_info.auto.preloaded_cargo {
-			1.0
-		} else {
-			0.0
-		} + match_info.auto.cubes_acquired as f32
-			+ 1.0)
-			.max(auto_shots);
-		if auto_cubes > 0.0 {
-			team.average_auto_ball_efficiency += auto_shots / auto_cubes;
-			team.auto_scoring_matches += 1;
-		}
-		if match_info.auto.low_goal_attempts > 0 {
-			team.average_auto_low_goal_accuracy +=
-				match_info.auto.low_goal_shots as f32 / match_info.auto.low_goal_attempts as f32;
-			team.auto_low_goal_scoring_matches += 1;
-		}
-		if match_info.auto.high_goal_attempts > 0 {
-			team.average_auto_high_goal_accuracy +=
-				match_info.auto.high_goal_shots as f32 / match_info.auto.high_goal_attempts as f32;
-			team.auto_high_goal_scoring_matches += 1;
-		}
-		team.average_auto_low_goals += match_info.auto.low_goal_shots as f32;
-		team.average_auto_high_goals += match_info.auto.high_goal_shots as f32;
-		let teleop_shots = match_info.teleop.low_goal_attempts as f32
-			+ match_info.teleop.high_goal_attempts as f32;
-		let teleop_balls = (match_info.teleop.cells_acquired as f32).max(teleop_shots);
-		if teleop_balls > 0.0 {
-			team.average_teleop_ball_efficiency += teleop_shots / teleop_balls;
-			team.teleop_scoring_matches += 1;
-		}
-		if match_info.teleop.low_goal_attempts > 0 {
-			team.average_teleop_low_goal_accuracy += match_info.teleop.low_goal_shots as f32
-				/ match_info.teleop.low_goal_attempts as f32;
-			team.teleop_low_goal_scoring_matches += 1;
-		}
-		if match_info.teleop.high_goal_attempts > 0 {
-			team.average_teleop_high_goal_accuracy += match_info.teleop.high_goal_shots as f32
-				/ match_info.teleop.high_goal_attempts as f32;
-			team.teleop_high_goal_scoring_matches += 1;
-		}
-		team.average_teleop_low_goals += match_info.teleop.low_goal_shots as f32;
-		team.average_teleop_high_goals += match_info.teleop.high_goal_shots as f32;
-		if match_info.climb.fell {
-			team.climb_fail_rate += 1.0;
-		}
-		for i in 0..match_info.climb.highest_attempted {
-			team.climb_attempt_counts[i as usize].0 += 1;
-		}
-		for i in 0..match_info.climb.highest_scored {
-			team.climb_attempt_counts[i as usize].1 += 1;
-		}
-		if match_info.climb.highest_attempted != 0 {
-			if match_info.climb.highest_scored == match_info.climb.highest_attempted {
-				team.climb_complete_success_rate += 1.0;
-			}
-			if match_info.climb.highest_scored != 0 {
-				team.climb_partial_success_rate += 1.0;
-			}
-			team.climb_attempts += 1;
-		}
-		if match_info.climb.started_before_endgame {
-			team.climb_before_endgame_rate += 1.0;
-		}
-		if match_info.shooter_positions == ShooterPositions::Hub
-			|| match_info.shooter_positions == ShooterPositions::Both
-		{
-			team.shoot_hub_rate += 1.0;
-		}
-		if match_info.shooter_positions == ShooterPositions::Far
-			|| match_info.shooter_positions == ShooterPositions::Both
-		{
-			team.shoot_far_rate += 1.0;
-		}
+		
+		let auto_hybrid =
+			match_info.auto.hybrid_scored as f32 * 3
+		let auto_middle =
+			match_info.auto.middle_cone_scored as f32 * 4 + match_info.auto.middle_cube_scored as f32 * 4;
+		let auto_high =
+			match_info.auto.high_cone_scored as f32 * 6 + match_info.auto.high_cube_scored as f32 * 6;
+		let auto_cone =
+			match_info.auto.middle_cone_scored as f32 * 4 + match_info.auto.high_cone_scored as f32 * 6;
+		let auto_cube =
+			match_info.auto.middle_cube_scored as f32 * 4 + match_info.auto.high_cube_scored as f32 * 6;
+
+		team.average_auto_hybrid_score += auto_hybrid;
+		team.average_auto_middle_score += auto_middle;
+		team.average_auto_high_score += auto_high;
+		team.average_auto_cone_score += auto_cone;
+		team.average_auto_cube_score += auto_cube;
+		team.average_auto_middle_cone_score += match_info.auto.middle_cone_scored as f32 * 4;
+		team.average_auto_middle_cube_score += match_info.auto.middle_cube_scored as f32 * 4;
+		team.average_auto_high_cone_score += match_info.auto.high_cone_scored as f32 * 6;
+		team.average_auto_high_cube_score += match_info.auto.high_cube_scored as f32 * 6;
+
+		let teleop_hybrid =
+			match_info.teleop.hybrid_scored as f32 * 2
+		let teleop_middle =
+			match_info.teleop.middle_cone_scored as f32 * 3 + match_info.teleop.middle_cube_scored as f32 * 3;
+		let teleop_high =
+			match_info.teleop.high_cone_scored as f32 * 5 + match_info.teleop.high_cube_scored as f32 * 5;
+		let teleop_cone =
+			match_info.teleop.middle_cone_scored as f32 * 3 + match_info.teleop.high_cone_scored as f32 * 5;
+		let teleop_cube =
+			match_info.teleop.middle_cube_scored as f32 * 3 + match_info.teleop.high_cube_scored as f32 * 5;
+
+		team.average_teleop_hybrid_score += teleop_hybrid;
+		team.average_teleop_middle_score += teleop_middle;
+		team.average_teleop_high_score += teleop_high;
+		team.average_teleop_cone_score += teleop_cone;
+		team.average_teleop_cube_score += teleop_cube;
+		team.average_teleop_middle_cone_score += match_info.teleop.middle_cone_scored as f32 * 3;
+		team.average_teleop_middle_cube_score += match_info.teleop.middle_cube_scored as f32 * 3;
+		team.average_teleop_high_cone_score += match_info.teleop.high_cone_scored as f32 * 5;
+		team.average_teleop_high_cube_score += match_info.teleop.high_cube_scored as f32 * 5;
+		team.average_cone_score += auto_cone + teleop_cone;
+		team.average_cube_score += auto_cube + teleop_cube;
+
+		team.average_hybrid_score += auto_hybrid + teleop_hybrid;
+		team.average_middle_score += auto_middle + teleop_middle;
+		team.average_high_score += auto_high + teleop_high;
+		
+
+		
 		team.overall_speed += match_info.speed as f32;
 		team.overall_stability += match_info.stability as f32;
 		if let Some(v) = match_info.defence {
@@ -510,34 +526,40 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		let match_count = (team_info.matches as f32).max(1.0);
 		team_info.average_auto_score /= match_count;
 		team_info.average_teleop_score /= match_count;
-		team_info.average_climb_score /= match_count;
-		team_info.average_auto_ball_efficiency /= (team_info.auto_scoring_matches as f32).max(1.0);
-		team_info.average_auto_low_goal_accuracy /=
-			(team_info.auto_low_goal_scoring_matches as f32).max(1.0);
-		team_info.average_auto_high_goal_accuracy /=
-			(team_info.auto_high_goal_scoring_matches as f32).max(1.0);
-		team_info.average_auto_high_goals /= match_count;
-		team_info.average_auto_low_goals /= match_count;
-		team_info.average_teleop_ball_efficiency /=
-			(team_info.teleop_scoring_matches as f32).max(1.0);
-		team_info.average_teleop_low_goal_accuracy /=
-			(team_info.teleop_low_goal_scoring_matches as f32).max(1.0);
-		team_info.average_teleop_high_goal_accuracy /=
-			(team_info.teleop_high_goal_scoring_matches as f32).max(1.0);
-		team_info.average_teleop_high_goals /= match_count;
-		team_info.average_teleop_low_goals /= match_count;
-		team_info.climb_before_endgame_rate /= match_count;
+		team_info.average_auto_hybrid_score /= match_count;
+		team_info.average_auto_middle_score /= match_count;
+		team_info.average_auto_high_score /= match_count;
+		team_info.average_auto_cone_score /= match_count;
+		team_info.average_auto_cube_score /= match_count;
+		team_info.average_auto_middle_cone_score /= match_count;
+		team_info.average_auto_middle_cube_score /= match_count;
+		team_info.average_auto_high_cone_score /= match_count;
+		team_info.average_auto_high_cube_score /= match_count;
+		team_info.average_teleop_hybrid_score /= match_count;
+		team_info.average_teleop_middle_score /= match_count;
+		team_info.average_teleop_high_score /= match_count;
+		team_info.average_teleop_cone_score /= match_count;
+		team_info.average_teleop_cube_score /= match_count;
+		team_info.average_teleop_middle_cone_score /= match_count;
+		team_info.average_teleop_middle_cube_score /= match_count;
+		team_info.average_teleop_high_cone_score /= match_count;
+		team_info.average_teleop_high_cube_score /= match_count;
 		team_info.overall_speed /= match_count;
 		team_info.overall_stability /= match_count;
 		team_info.overall_defence /= match_count;
-		team_info.climb_fail_rate /= match_count;
-		team_info.climb_complete_success_rate /= (team_info.climb_attempts as f32).max(1.0);
-		team_info.climb_partial_success_rate /= (team_info.climb_attempts as f32).max(1.0);
-		team_info.shoot_hub_rate /= match_count;
-		team_info.shoot_far_rate /= match_count;
-		team_info.start_left_rate /= match_count;
-		team_info.start_middle_rate /= match_count;
-		team_info.start_right_rate /= match_count;
+		team_info.average_cone_score /= match_count;
+		team_info.average_cube_score /= match_count;
+		team_info.average_hybrid_score /= match_count;
+		team_info.average_middle_score /= match_count;
+		team_info.average_high_score /= match_count;
+		team_info.charge_station_auto_off /= match_count;
+		team_info.charge_station_auto_on /= match_count;
+		team_info.charge_station_auto_charged /= match_count;
+		team_info.charge_station_teleop_off /= match_count;
+		team_info.charge_station_teleop_on /= match_count;
+		team_info.charge_station_teleop_charged /= match_count;
+		team_info.parked /= match_count;
+
 		if let Some(tba_team) = tba_teams.get(&team_info.team_number) {
 			team_info.opr = tba_team.opr;
 			team_info.dpr = tba_team.dpr;
@@ -572,7 +594,6 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 					if opponents.contains(other_team_number) && other_team_number != team_number {
 						opponent_scores += other_team.average_auto_score
 							+ other_team.average_teleop_score
-							+ other_team.average_climb_score;
 						average_defence_score += other_team.average_teleop_score - teleop_score;
 						defended_teams += 1;
 					} else if alliance.contains(other_team_number)
@@ -580,7 +601,6 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 					{
 						ally_scores += other_team.average_auto_score
 							+ other_team.average_teleop_score
-							+ other_team.average_climb_score;
 						allys += 1;
 					}
 				}
@@ -615,32 +635,35 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 	for team_info in teams.values() {
 		average.average_auto_score += team_info.average_auto_score;
 		average.average_teleop_score += team_info.average_teleop_score;
-		average.average_climb_score += team_info.average_climb_score;
-		average.average_auto_ball_efficiency += team_info.average_auto_ball_efficiency;
-		average.average_auto_high_goal_accuracy += team_info.average_auto_high_goal_accuracy;
-		average.average_auto_low_goal_accuracy += team_info.average_auto_low_goal_accuracy;
-		average.average_auto_high_goals += team_info.average_auto_high_goals;
-		average.average_auto_low_goals += team_info.average_auto_low_goals;
-		average.average_teleop_ball_efficiency += team_info.average_teleop_ball_efficiency;
-		average.average_teleop_high_goal_accuracy += team_info.average_teleop_high_goal_accuracy;
-		average.average_teleop_low_goal_accuracy += team_info.average_teleop_low_goal_accuracy;
-		average.average_teleop_high_goals += team_info.average_teleop_high_goals;
-		average.average_teleop_low_goals += team_info.average_teleop_low_goals;
+		average.average_cone_score += team_info.average_cone_score;
+		average.average_cube_score += team_info.average_cube_score;
+		average.average_auto_cone_score += team_info.average_auto_cone_score;
+		average.average_auto_cube_score += team_info.average_auto_cube_score;
+		average.average_teleop_cone_score += team_info.average_teleop_cone_score;
+		average.average_teleop_cube_score += team_info.average_teleop_cube_score;
+		average.average_auto_hybrid_score += team_info.average_auto_hybrid_score;
+		average.average_auto_middle_score += team_info.average_auto_middle_score;
+		average.average_auto_high_score += team_info.average_auto_high_score;
+		average.average_auto_middle_cone_score += team_info.average_auto_middle_cone_score;
+		average.average_auto_middle_cube_score += team_info.average_auto_middle_cube_score;
+		average.average_auto_high_cone_score += team_info.average_auto_high_cone_score;
+		average.average_auto_high_cube_score += team_info.average_auto_high_cube_score;
+		average.average_teleop_hybrid_score += team_info.average_teleop_hybrid_score;
+		average.average_teleop_middle_score += team_info.average_teleop_middle_score;
+		average.average_teleop_high_score += team_info.average_teleop_high_score;
+		average.average_teleop_middle_cone_score += team_info.average_teleop_middle_cone_score;
+		average.average_teleop_middle_cube_score += team_info.average_teleop_middle_cube_score;
+		average.average_teleop_high_cone_score += team_info.average_teleop_high_cone_score;
+		average.average_teleop_high_cube_score += team_info.average_teleop_high_cube_score;
 		average.average_defence_score += team_info.average_defence_score;
 		average.average_luck_score += team_info.average_luck_score;
-		average.climb_fail_rate += team_info.climb_fail_rate;
-		average.climb_partial_success_rate += team_info.climb_partial_success_rate;
-		average.climb_complete_success_rate += team_info.climb_complete_success_rate;
-		average.climb_before_endgame_rate += team_info.climb_before_endgame_rate;
-		average.shoot_hub_rate += team_info.shoot_hub_rate;
-		average.shoot_far_rate += team_info.shoot_far_rate;
-		average.start_left_rate += team_info.start_left_rate;
-		average.start_right_rate += team_info.start_right_rate;
-		average.start_middle_rate += team_info.start_middle_rate;
-		for i in 0..4 {
-			average.climb_attempt_counts[i].0 += team_info.climb_attempt_counts[i].0;
-			average.climb_attempt_counts[i].1 += team_info.climb_attempt_counts[i].1;
-		}
+		average.parked += team_info.parked;
+		average.charge_station_auto_off += team_info.charge_station_auto_off;
+		average.charge_station_auto_on += team_info.charge_station_auto_on;
+		average.charge_station_auto_charged += team_info.charge_station_auto_charged;
+		average.charge_station_teleop_off += team_info.charge_station_teleop_off;
+		average.charge_station_teleop_on += team_info.charge_station_teleop_on;
+		average.charge_station_teleop_charged += team_info.charge_station_teleop_charged;
 		average.opr += team_info.opr;
 		average.dpr += team_info.dpr;
 		average.win_count += team_info.win_count;
@@ -656,28 +679,39 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		let total_teams_f = (teams.len() as f32).max(1.0);
 		average.average_auto_score /= total_teams_f;
 		average.average_teleop_score /= total_teams_f;
-		average.average_climb_score /= total_teams_f;
-		average.average_auto_ball_efficiency /= total_teams_f;
-		average.average_auto_high_goal_accuracy /= total_teams_f;
-		average.average_auto_low_goal_accuracy /= total_teams_f;
-		average.average_auto_high_goals /= total_teams_f;
-		average.average_auto_low_goals /= total_teams_f;
-		average.average_teleop_ball_efficiency /= total_teams_f;
-		average.average_teleop_high_goal_accuracy /= total_teams_f;
-		average.average_teleop_low_goal_accuracy /= total_teams_f;
-		average.average_teleop_high_goals /= total_teams_f;
-		average.average_teleop_low_goals /= total_teams_f;
+
+		average.average_auto_cone_score /= total_teams_f;
+		average.average_auto_cube_score /= total_teams_f;
+		average.average_auto_high_cone_score /= total_teams_f;
+		average.average_auto_high_cube_score /= total_teams_f;
+		average.average_auto_high_score /= total_teams_f;
+		average.average_auto_hybrid_score /= total_teams_f;
+		average.average_auto_middle_cone_score /= total_teams_f;
+		average.average_auto_middle_cube_score /= total_teams_f;
+		average.average_auto_middle_score /= total_teams_f;
+		average.average_cone_score /= total_teams_f;
+		average.average_cube_score /= total_teams_f;
 		average.average_defence_score /= total_teams_f;
+		average.average_high_score /= total_teams_f;
+		average.average_hybrid_score /= total_teams_f;
 		average.average_luck_score /= total_teams_f;
-		average.climb_fail_rate /= total_teams_f;
-		average.climb_partial_success_rate /= total_teams_f;
-		average.climb_complete_success_rate /= total_teams_f;
-		average.climb_before_endgame_rate /= total_teams_f;
-		average.shoot_hub_rate /= total_teams_f;
-		average.shoot_far_rate /= total_teams_f;
-		average.start_left_rate /= total_teams_f;
-		average.start_right_rate /= total_teams_f;
-		average.start_middle_rate /= total_teams_f;
+		average.average_middle_score /= total_teams_f;
+		average.average_teleop_cone_score /= total_teams_f;
+		average.average_teleop_cube_score /= total_teams_f;
+		average.average_teleop_high_cone_score /= total_teams_f;
+		average.average_teleop_high_cube_score /= total_teams_f;
+		average.average_teleop_high_score /= total_teams_f;
+		average.average_teleop_hybrid_score /= total_teams_f;
+		average.average_teleop_middle_cone_score /= total_teams_f;
+		average.average_teleop_middle_score /= total_teams_f;
+		average.average_teleop_score /= total_teams_f;
+		average.parked /= total_teams_f;
+		average.charge_station_auto_charged /= total_teams_f;
+		average.charge_station_auto_off /= total_teams_f;
+		average.charge_station_auto_on /= total_teams_f;
+		average.charge_station_teleop_charged /= total_teams_f;
+		average.charge_station_teleop_off /= total_teams_f;
+		average.charge_station_teleop_on /= total_teams_f;
 		average.opr /= total_teams_f;
 		average.dpr /= total_teams_f;
 		average.win_count /= total_teams;
