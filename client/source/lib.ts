@@ -12,34 +12,38 @@ export interface TeamInfo {
 	teamRookieYear: number | null;
 	averageAutoScore: number;
 	averageTeleopScore: number;
-	averageClimbScore: number;
-	averageAutoBallEfficiency: number;
-	averageAutoHighGoalAccuracy: number;
-	averageAutoLowGoalAccuracy: number;
-	averageAutoHighGoals: number;
-	averageAutoLowGoals: number;
-	averageTeleopBallEfficiency: number;
-	averageTeleopHighGoalAccuracy: number;
-	averageTeleopLowGoalAccuracy: number;
-	averageTeleopHighGoals: number;
-	averageTeleopLowGoals: number;
+	averageAutoHybridScore: number;
+	averageAutoMiddleScore: number;
+	averageAutoHighScore: number;
+	averageAutoConeScore: number;
+	averageAutoCubeScore: number;
+	averageAutoMiddleConeScore: number;
+	averageAutoMiddleCubeScore: number;
+	averageAutoHighCubeScore: number;
+	averageAutoHighConeScore: number;
+	averageTeleopHybridScore: number;
+	averageTeleopMiddleScore: number;
+	averageTeleopHighScore: number;
+	averageTeleopConeScore: number;
+	averageTeleopCubeScore: number;
+	averageTeleopMiddleCubeScore: number;
+	averageTeleopMiddleConeScore: number;
+	averageTeleopHighCubeScore: number;
+	averageTeleopHighConeScore: number;
 	averageDefenceScore: number;
 	averageLuckScore: number;
-	climbFailRate: number;
-	climbPartialSuccessRate: number;
-	climbCompleteSuccessRate: number;
-	climbAttemptCounts: [
-		[number, number],
-		[number, number],
-		[number, number],
-		[number, number]
-	];
-	climbBeforeEndgameRate: number;
-	shootHubRate: number;
-	shootFarRate: number;
-	startLeftRate: number;
-	startMiddleRate: number;
-	startRightRate: number;
+	averageConeScore: number;
+	averageCubeScore: number;
+	averageHybridScore: number;
+	averageMiddleScore: number;
+	averageHighScore: number;
+	chargeStationAutoOff: number;
+	chargeStationAutoOn: number;
+	chargeStationAutoCharged: number;
+	chargeStationTeleopOff: number;
+	chargeStationTeleopOn: number;
+	chargeStationTeleopCharged: number;
+	parked: number;
 	opr: number;
 	dpr: number;
 	winCount: number;

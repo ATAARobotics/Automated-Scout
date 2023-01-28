@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 use std::collections::HashMap;
 
-use crate::data::{DriveType, MatchType, ShooterCapability, ShooterPositions, StartingLocation};
+use crate::data::{DriveType, MatchType, ShooterCapability, ShooterPositions, ChargeStation};
 use serde::{Deserialize, Serialize};
 
 use crate::Database;
@@ -26,6 +26,8 @@ pub struct TeamInfo {
 	pub average_teleop_hybrid_score: f32,
 	pub average_teleop_middle_score: f32,
 	pub average_teleop_high_score: f32,
+	pub average_teleop_cone_score: f32,
+	pub average_teleop_cube_score: f32,
 	pub average_teleop_middle_cube_score: f32,
 	pub average_teleop_middle_cone_score: f32,
 	pub average_teleop_high_cube_score: f32,
@@ -43,7 +45,7 @@ pub struct TeamInfo {
 	pub charge_station_teleop_off: f32,
 	pub charge_station_teleop_on: f32,
 	pub charge_station_teleop_charged: f32,
-	pub parked: f32
+	pub parked: f32,
 	pub opr: f32,
 	pub dpr: f32,
 	pub win_count: u32,
@@ -80,7 +82,7 @@ pub struct TeamInfo {
 	defended_teams: u32,
 	auto_hybrid_scoring_matches: u32,
 	auto_medium_scoring_matches: u32,
-	auto_high_scoring_matches: u32
+	auto_high_scoring_matches: u32,
 	teleop_hybrid_scoring_matches: u32,
 	teleop_medium_scoring_matches: u32,
 	teleop_high_scoring_matches: u32,
@@ -419,7 +421,7 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		
 
 
-		let auto_score = match_info.auto_hybrid_scored as f32 * 3.0
+		let auto_score = match_info.auto.hybrid_scored as f32 * 3.0
 			+ match_info.auto.middle_cube_scored as f32 * 4.0
 			+ match_info.auto.middle_cone_scored as f32 * 4.0
 			+ match_info.auto.high_cube_scored as f32 * 6.0
@@ -429,7 +431,7 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 				3.0
 			} else {
 				0.0
-			};
+			}
 
 			+ if match_info.auto.charge_station == ChargeStation::On{
 				8.0
@@ -439,7 +441,7 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 				0.0
 			};	
 
-			let teleop_score = match_info.teleop_hybrid_scored as f32 * 3.0
+			let teleop_score = match_info.teleop.hybrid_scored as f32 * 3.0
 			+ match_info.teleop.middle_cube_scored as f32 * 4.0
 			+ match_info.teleop.middle_cone_scored as f32 * 4.0
 			+ match_info.teleop.high_cube_scored as f32 * 6.0
@@ -455,52 +457,52 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 				0.0
 			};	
 
-		team.parked += match_info.teleop.parked;
+		
 
 		team.average_auto_score += auto_score;
 		team.average_teleop_score += teleop_score;
 		
 		let auto_hybrid =
-			match_info.auto.hybrid_scored as f32 * 3
+			match_info.auto.hybrid_scored as f32 * 3.0;
 		let auto_middle =
-			match_info.auto.middle_cone_scored as f32 * 4 + match_info.auto.middle_cube_scored as f32 * 4;
+			match_info.auto.middle_cone_scored as f32 * 4.0 + match_info.auto.middle_cube_scored as f32 * 4.0;
 		let auto_high =
-			match_info.auto.high_cone_scored as f32 * 6 + match_info.auto.high_cube_scored as f32 * 6;
+			match_info.auto.high_cone_scored as f32 * 6.0 + match_info.auto.high_cube_scored as f32 * 6.0;
 		let auto_cone =
-			match_info.auto.middle_cone_scored as f32 * 4 + match_info.auto.high_cone_scored as f32 * 6;
+			match_info.auto.middle_cone_scored as f32 * 4.0 + match_info.auto.high_cone_scored as f32 * 6.0;
 		let auto_cube =
-			match_info.auto.middle_cube_scored as f32 * 4 + match_info.auto.high_cube_scored as f32 * 6;
+			match_info.auto.middle_cube_scored as f32 * 4.0 + match_info.auto.high_cube_scored as f32 * 6.0;
 
 		team.average_auto_hybrid_score += auto_hybrid;
 		team.average_auto_middle_score += auto_middle;
 		team.average_auto_high_score += auto_high;
 		team.average_auto_cone_score += auto_cone;
 		team.average_auto_cube_score += auto_cube;
-		team.average_auto_middle_cone_score += match_info.auto.middle_cone_scored as f32 * 4;
-		team.average_auto_middle_cube_score += match_info.auto.middle_cube_scored as f32 * 4;
-		team.average_auto_high_cone_score += match_info.auto.high_cone_scored as f32 * 6;
-		team.average_auto_high_cube_score += match_info.auto.high_cube_scored as f32 * 6;
+		team.average_auto_middle_cone_score += match_info.auto.middle_cone_scored as f32 * 4.0;
+		team.average_auto_middle_cube_score += match_info.auto.middle_cube_scored as f32 * 4.0;
+		team.average_auto_high_cone_score += match_info.auto.high_cone_scored as f32 * 6.0;
+		team.average_auto_high_cube_score += match_info.auto.high_cube_scored as f32 * 6.0;
 
 		let teleop_hybrid =
-			match_info.teleop.hybrid_scored as f32 * 2
+			match_info.teleop.hybrid_scored as f32 * 2.0;
 		let teleop_middle =
-			match_info.teleop.middle_cone_scored as f32 * 3 + match_info.teleop.middle_cube_scored as f32 * 3;
+			match_info.teleop.middle_cone_scored as f32 * 3.0 + match_info.teleop.middle_cube_scored as f32 * 3.0;
 		let teleop_high =
-			match_info.teleop.high_cone_scored as f32 * 5 + match_info.teleop.high_cube_scored as f32 * 5;
+			match_info.teleop.high_cone_scored as f32 * 5.0 + match_info.teleop.high_cube_scored as f32 * 5.0;
 		let teleop_cone =
-			match_info.teleop.middle_cone_scored as f32 * 3 + match_info.teleop.high_cone_scored as f32 * 5;
+			match_info.teleop.middle_cone_scored as f32 * 3.0 + match_info.teleop.high_cone_scored as f32 * 5.0;
 		let teleop_cube =
-			match_info.teleop.middle_cube_scored as f32 * 3 + match_info.teleop.high_cube_scored as f32 * 5;
+			match_info.teleop.middle_cube_scored as f32 * 3.0 + match_info.teleop.high_cube_scored as f32 * 5.0;
 
 		team.average_teleop_hybrid_score += teleop_hybrid;
 		team.average_teleop_middle_score += teleop_middle;
 		team.average_teleop_high_score += teleop_high;
 		team.average_teleop_cone_score += teleop_cone;
 		team.average_teleop_cube_score += teleop_cube;
-		team.average_teleop_middle_cone_score += match_info.teleop.middle_cone_scored as f32 * 3;
-		team.average_teleop_middle_cube_score += match_info.teleop.middle_cube_scored as f32 * 3;
-		team.average_teleop_high_cone_score += match_info.teleop.high_cone_scored as f32 * 5;
-		team.average_teleop_high_cube_score += match_info.teleop.high_cube_scored as f32 * 5;
+		team.average_teleop_middle_cone_score += match_info.teleop.middle_cone_scored as f32 * 3.0;
+		team.average_teleop_middle_cube_score += match_info.teleop.middle_cube_scored as f32 * 3.0;
+		team.average_teleop_high_cone_score += match_info.teleop.high_cone_scored as f32 * 5.0;
+		team.average_teleop_high_cube_score += match_info.teleop.high_cube_scored as f32 * 5.0;
 		team.average_cone_score += auto_cone + teleop_cone;
 		team.average_cube_score += auto_cube + teleop_cube;
 
@@ -558,7 +560,6 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		team_info.charge_station_teleop_off /= match_count;
 		team_info.charge_station_teleop_on /= match_count;
 		team_info.charge_station_teleop_charged /= match_count;
-		team_info.parked /= match_count;
 
 		if let Some(tba_team) = tba_teams.get(&team_info.team_number) {
 			team_info.opr = tba_team.opr;
@@ -593,14 +594,14 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 					let other_team = &teams[other_team_number];
 					if opponents.contains(other_team_number) && other_team_number != team_number {
 						opponent_scores += other_team.average_auto_score
-							+ other_team.average_teleop_score
+							+ other_team.average_teleop_score;
 						average_defence_score += other_team.average_teleop_score - teleop_score;
 						defended_teams += 1;
 					} else if alliance.contains(other_team_number)
 						&& other_team_number != team_number
 					{
 						ally_scores += other_team.average_auto_score
-							+ other_team.average_teleop_score
+							+ other_team.average_teleop_score;
 						allys += 1;
 					}
 				}
@@ -657,7 +658,6 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		average.average_teleop_high_cube_score += team_info.average_teleop_high_cube_score;
 		average.average_defence_score += team_info.average_defence_score;
 		average.average_luck_score += team_info.average_luck_score;
-		average.parked += team_info.parked;
 		average.charge_station_auto_off += team_info.charge_station_auto_off;
 		average.charge_station_auto_on += team_info.charge_station_auto_on;
 		average.charge_station_auto_charged += team_info.charge_station_auto_charged;
@@ -705,7 +705,6 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		average.average_teleop_middle_cone_score /= total_teams_f;
 		average.average_teleop_middle_score /= total_teams_f;
 		average.average_teleop_score /= total_teams_f;
-		average.parked /= total_teams_f;
 		average.charge_station_auto_charged /= total_teams_f;
 		average.charge_station_auto_off /= total_teams_f;
 		average.charge_station_auto_on /= total_teams_f;

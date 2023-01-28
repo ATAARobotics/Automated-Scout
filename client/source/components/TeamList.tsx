@@ -60,88 +60,10 @@ const order: [
 		5.0,
 	],
 	[
-		"Tele Acc",
-		(match: TeamInfo) =>
-			match.averageAutoHighGoalAccuracy + match.averageAutoLowGoalAccuracy,
-		(match: TeamInfo) =>
-			formatPercent(match.averageAutoHighGoalAccuracy) +
-			"H, " +
-			formatPercent(match.averageAutoLowGoalAccuracy) +
-			"L",
-		1,
-		false,
-		5.0,
-	],
-	[
-		"Auto H:L",
-		(match: TeamInfo) =>
-			match.averageAutoHighGoals / match.averageAutoLowGoals,
-		(match: TeamInfo) =>
-			formatRatio(match.averageAutoHighGoals, match.averageAutoLowGoals),
-		1,
-		false,
-		5.0,
-	],
-	[
 		"Tele Sc.",
-		(match: TeamInfo) =>
-			match.averageAutoHighGoals / match.averageAutoLowGoals,
+		(match: TeamInfo) => match.averageTeleopScore,
 		(match: TeamInfo) => match.averageTeleopScore.toFixed(1),
 		0.75,
-		false,
-		5.0,
-	],
-	[
-		"Tele Acc",
-		(match: TeamInfo) =>
-			match.averageTeleopHighGoalAccuracy +
-			match.averageTeleopLowGoalAccuracy,
-		(match: TeamInfo) =>
-			formatPercent(match.averageTeleopHighGoalAccuracy) +
-			"H, " +
-			formatPercent(match.averageTeleopLowGoalAccuracy) +
-			"L",
-		1,
-		false,
-		5.0,
-	],
-	[
-		"Tele H:L",
-		(match: TeamInfo) =>
-			match.averageTeleopHighGoals / match.averageTeleopLowGoals,
-		(match: TeamInfo) =>
-			formatRatio(match.averageTeleopHighGoals, match.averageTeleopLowGoals),
-		1,
-		false,
-		5.0,
-	],
-	[
-		"Climb Sc.",
-		(match: TeamInfo) => match.averageClimbScore,
-		(match: TeamInfo) => match.averageClimbScore.toFixed(1),
-		0.75,
-		false,
-		5.0,
-	],
-	[
-		"Climb Acc",
-		(match: TeamInfo) => 1.0 - match.climbFailRate,
-		(match: TeamInfo) =>
-			formatPercent(1.0 - match.climbFailRate) +
-			" (" +
-			match.climbAttemptCounts
-				.map((n) => ((n[1] / n[0]) * 100.0).toFixed(0) + "%")
-				.join(", ") +
-			")",
-		3,
-		false,
-		5.0,
-	],
-	[
-		"Climb Erly.",
-		(match: TeamInfo) => match.climbBeforeEndgameRate,
-		(match: TeamInfo) => formatPercent(match.climbBeforeEndgameRate),
-		1,
 		false,
 		5.0,
 	],
@@ -202,27 +124,15 @@ const order: [
 		-5.0,
 	],
 	[
-		"Start Loc.",
+		"Auto Charge",
 		(match: TeamInfo) =>
-			match.startLeftRate * 3 +
-			match.startMiddleRate * 2 +
-			match.startRightRate,
-		(match: TeamInfo) =>
-			formatProbList(
-				["Left", "Mid", "Right"],
-				[match.startLeftRate, match.startMiddleRate, match.startRightRate]
-			),
-		1,
-		false,
-		false,
-	],
-	[
-		"Shoot Loc.",
-		(match: TeamInfo) => match.shootHubRate - match.shootFarRate,
+			match.chargeStationAutoOff * 3 +
+			match.chargeStationAutoOn * 2 +
+			match.chargeStationAutoCharged,
 		(match: TeamInfo) =>
 			formatProbList(
-				["Hub", "Far"],
-				[match.shootHubRate, match.shootFarRate]
+				["Off", "On", "Charged"],
+				[match.chargeStationAutoOff, match.chargeStationAutoOn, match.chargeStationAutoCharged]
 			),
 		1,
 		false,
@@ -237,7 +147,7 @@ const order: [
 		0.01,
 	],
 	[
-		"Pit Peopl.",
+		"Pit People.",
 		(match: TeamInfo) => match.averagePeopleInPit,
 		(match: TeamInfo) => match.averagePeopleInPit.toFixed(0),
 		1,
@@ -288,13 +198,11 @@ const order: [
 		"Avg. Sc.",
 		(match: TeamInfo) =>
 			match.averageAutoScore +
-			match.averageTeleopScore +
-			match.averageClimbScore,
+			match.averageTeleopScore,
 		(match: TeamInfo) =>
 			(
 				match.averageAutoScore +
-				match.averageTeleopScore +
-				match.averageClimbScore
+				match.averageTeleopScore
 			).toFixed(1),
 		1,
 		"right",
