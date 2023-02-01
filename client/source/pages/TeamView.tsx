@@ -26,7 +26,24 @@ function KeyValueBox(props: {
 		</div>
 	);
 }
+/*
+Pit Scouting List:
 
+Definitely:
+Can you stack cones, cubes, or both
+Can you go low, middle, or high
+Drive Train
+How long does it take to balance
+Business
+Chaos Level
+People in Pit
+Everybot
+
+Maybe:
+Does it look stable
+Friendliness
+
+*/
 /**
  * Page not found page.
  *

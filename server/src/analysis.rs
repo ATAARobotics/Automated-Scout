@@ -45,7 +45,7 @@ pub struct TeamInfo {
 	pub charge_station_teleop_off: f32,
 	pub charge_station_teleop_on: f32,
 	pub charge_station_teleop_charged: f32,
-	pub parked: f32,
+	pub parked: bool,
 	pub opr: f32,
 	pub dpr: f32,
 	pub win_count: u32,
@@ -441,16 +441,16 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 				0.0
 			};	
 
-			let teleop_score = match_info.teleop.hybrid_scored as f32 * 3.0
-			+ match_info.teleop.middle_cube_scored as f32 * 4.0
-			+ match_info.teleop.middle_cone_scored as f32 * 4.0
-			+ match_info.teleop.high_cube_scored as f32 * 6.0
-			+ match_info.teleop.high_cone_scored as f32 * 6.0
+			let teleop_score = match_info.teleop.hybrid_scored as f32 * 2.0
+			+ match_info.teleop.middle_cube_scored as f32 * 3.0
+			+ match_info.teleop.middle_cone_scored as f32 * 3.0
+			+ match_info.teleop.high_cube_scored as f32 * 5.0
+			+ match_info.teleop.high_cone_scored as f32 * 5.0
 
 			+ if match_info.teleop.charge_station == ChargeStation::On{
-				8.0
+				6.0
 			} else if match_info.teleop.charge_station == ChargeStation::Charged {
-				12.0
+				10.0
 			} else if match_info.teleop.parked{
 				2.0
 			} else {
@@ -512,10 +512,10 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		
 
 		
-		team.overall_speed += match_info.speed as f32;
-		team.overall_stability += match_info.stability as f32;
+		team.overall_speed += match_info.speed as f32 + 1.0;
+		team.overall_stability += match_info.stability as f32 + 1.0;
 		if let Some(v) = match_info.defence {
-			team.overall_defence += v;
+			team.overall_defence += v + 1.0;
 		}
 		team.matches += 1;
 		matches_by_game

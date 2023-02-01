@@ -86,7 +86,7 @@ const order: [
 	[
 		"Speed",
 		(match: TeamInfo) => match.overallSpeed,
-		(match: TeamInfo) => match.overallSpeed.toFixed(1) + " / 5",
+		(match: TeamInfo) => match.overallSpeed.toFixed(1) + " / 5.0",
 		1,
 		false,
 		5.0,
@@ -94,7 +94,7 @@ const order: [
 	[
 		"Stability",
 		(match: TeamInfo) => match.overallStability,
-		(match: TeamInfo) => match.overallStability.toFixed(1) + " / 5",
+		(match: TeamInfo) => match.overallStability.toFixed(1) + " / 5.0",
 		1,
 		false,
 		5.0,
@@ -102,7 +102,7 @@ const order: [
 	[
 		"Defence",
 		(match: TeamInfo) => match.overallDefence,
-		(match: TeamInfo) => match.overallDefence.toFixed(1) + " / 5",
+		(match: TeamInfo) => match.overallDefence.toFixed(1) + " / 5.0",
 		1,
 		false,
 		5.0,
@@ -139,33 +139,16 @@ const order: [
 		false,
 	],
 	[
-		"Friendly",
-		(match: TeamInfo) => (match.friendly ? 1.0 : 0.0),
-		(match: TeamInfo) => (match.friendly ? "Yes" : "No"),
-		1,
-		false,
-		0.01,
-	],
-	[
-		"Pit People.",
-		(match: TeamInfo) => match.averagePeopleInPit,
-		(match: TeamInfo) => match.averagePeopleInPit.toFixed(0),
-		1,
-		false,
-		false,
-	],
-	[
-		"Pit Busy",
-		(match: TeamInfo) => match.averagePitBusiness,
-		(match: TeamInfo) => match.averagePitBusiness.toFixed(2),
-		1,
-		false,
-		false,
-	],
-	[
-		"Pit Chaos",
-		(match: TeamInfo) => match.averagePitChaos,
-		(match: TeamInfo) => match.averagePitChaos.toFixed(2),
+		"Teleop Charge",
+		(match: TeamInfo) =>
+			match.chargeStationTeleopOff * 3 +
+			match.chargeStationTeleopOn * 2 +
+			match.chargeStationTeleopCharged,
+		(match: TeamInfo) =>
+			formatProbList(
+				["Off", "On", "Charged"],
+				[match.chargeStationTeleopOff, match.chargeStationTeleopOn, match.chargeStationTeleopCharged]
+			),
 		1,
 		false,
 		false,

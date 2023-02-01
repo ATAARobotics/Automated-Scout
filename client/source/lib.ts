@@ -43,7 +43,7 @@ export interface TeamInfo {
 	chargeStationTeleopOff: number;
 	chargeStationTeleopOn: number;
 	chargeStationTeleopCharged: number;
-	parked: number;
+	parked: boolean;
 	opr: number;
 	dpr: number;
 	winCount: number;
@@ -84,7 +84,7 @@ export interface MatchInfo {
 	team: number;
 	auto: {
 		exitedTarmac: boolean;
-		chargeStation: "off" | "on" | "balanced";
+		chargeStation: "off" | "on" | "charged";
 		hybridScored: number;
 		middleCubeScored: number;
 		middleConeScored: number;
@@ -98,7 +98,7 @@ export interface MatchInfo {
 		highCubeScored: number;
 		highConeScored: number;
 		parked: boolean;
-		chargeStation: "off" | "on" | "balanced";
+		chargeStation: "off" | "on" | "charged";
 	};
 	
 	speed: number;
