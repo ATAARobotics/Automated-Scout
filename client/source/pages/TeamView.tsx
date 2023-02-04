@@ -26,24 +26,6 @@ function KeyValueBox(props: {
 		</div>
 	);
 }
-/*
-Pit Scouting List:
-
-Definitely:
-Can you stack cones, cubes, or both
-Can you go low, middle, or high
-Drive Train
-How long does it take to balance
-Business
-Chaos Level
-People in Pit
-Everybot
-
-Maybe:
-Does it look stable
-Friendliness
-
-*/
 /**
  * Page not found page.
  *
@@ -86,20 +68,25 @@ function TeamView(): React.ReactElement {
 					const teamInfo = teamInfos.result.find(
 						(team) => team.teamNumber === teamNumber
 					) as TeamInfo;
-					const shooterCapabilities = [
+					const stackType = [
 						"None",
-						"Low",
-						"High",
+						"Cone",
+						"Cube",
 						"Both",
 						"Unknown",
 					];
-					const shooterRanges = ["N/A", "Close", "Far", "Any", "Unknown"];
-					const climbHeights = [
+					const stackRange = [
 						"None",
-						"Low",
+						"Hybrid",
 						"Mid",
 						"High",
-						"Traversal",
+						"All",
+						"Unknown",
+					];
+					const driveTypes = [
+						"Swerve",
+						"Tank",
+						"Other",
 						"Unknown",
 					];
 					return (
@@ -176,44 +163,36 @@ function TeamView(): React.ReactElement {
 													value={visit.pit.friendly}
 												/>
 												<KeyValueBox
-													label="Cube Capacity"
-													value={visit.robot.cubeCapacity}
-												/>
-												<KeyValueBox
-													label="Autonomous Balls"
-													value={visit.robot.autoBallCount}
-												/>
-												<KeyValueBox
-													label="Shooter Goal"
+													label="Stack Type"
 													value={
-														shooterCapabilities[
-															visit.robot.shooterCapability ?? 4
+														stackType[
+															visit.robot.stackType ?? 4
 														]
 													}
 												/>
 												<KeyValueBox
-													label="Shooter Range"
+													label="Stack Range"
 													value={
-														shooterRanges[
-															visit.robot.shooterRange ?? 4
+														stackRange[
+															visit.robot.stackRange ?? 5
 														]
 													}
 												/>
 												<KeyValueBox
-													label="Climb Max Height"
+													label="Balance Time"
+													value={visit.robot.balanceTime}
+												/>
+												<KeyValueBox
+													label="Everybot"
+													value={visit.robot.everybot}
+												/>
+												<KeyValueBox
+													label="Drive"
 													value={
-														climbHeights[
-															visit.robot.climbHeight ?? 5
+														driveTypes[
+															visit.robot.driveType ?? 3
 														]
 													}
-												/>
-												<KeyValueBox
-													label="Climb Time"
-													value={visit.robot.climbTime}
-												/>
-												<KeyValueBox
-													label="Climb using Everybot"
-													value={visit.robot.climbEverybot}
 												/>
 											</div>
 										</div>

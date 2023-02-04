@@ -1,9 +1,7 @@
 export type MatchType = "qualification" | "practice";
-export type ClimbLevel = 0 | 1 | 2 | 3 | 4;
-export type ShooterPositions = 0 | 1 | 2 | 3;
+export type StackType = 0 | 1 | 2 | 3;
+export type StackRange = 0 | 1 | 2 | 3 | 4;
 export type BusinessLevel = 0 | 1 | 2;
-export type CubeCapacity = 0 | 1 | 2;
-export type ShooterCapability = 0 | 1 | 2 | 3;
 export type DriveType = 0 | 1 | 2;
 
 export interface TeamInfo {
@@ -58,22 +56,22 @@ export interface TeamInfo {
 	friendly: boolean;
 	claimedAutoBallCount: number | null;
 	claimedBallCapacity: number | null;
-	claimedClimbTime: number | null;
-	claimedClimbEverybot: boolean;
+	claimedBalanceTime: number | null;
+	claimedEverybot: boolean;
 	claimedDriveType: DriveType | null;
-	claimedShooterLow: boolean;
-	claimedShooterHigh: boolean;
-	claimedShooterHub: boolean;
-	claimedShooterFar: boolean;
-	originalAutoBallCount: number | null;
-	originalBallCapacity: number | null;
-	originalClimbTime: number | null;
-	originalClimbEverybot: boolean;
+	claimedStackCone: boolean;
+	claimedStackCube: boolean;
+	claimedStackHybrid: boolean;
+	claimedStackMiddle: boolean;
+	claimedStackHigh: boolean;
+	originalBalanceTime: number | null;
+	originalEverybot: boolean;
 	originalDriveType: DriveType | null;
-	originalShooterLow: boolean;
-	originalShooterHigh: boolean;
-	originalShooterHub: boolean;
-	originalShooterFar: boolean;
+	originalStackCone: boolean;
+	originalStackCube: boolean;
+	originalStackHybrid: boolean;
+	originalStackMiddle: boolean;
+	originalStackHigh: boolean;
 	matches: number;
 }
 
@@ -123,14 +121,11 @@ export interface RobotInfo {
 		comments: string;
 	};
 	robot: {
-		autoBallCount: number | undefined;
-		cubeCapacity: CubeCapacity | undefined;
-		climbTime: number | undefined;
-		climbHeight: ClimbLevel | undefined;
-		climbEverybot: boolean | undefined;
-		shooterCapability: ShooterCapability | undefined;
-		shooterRange: ShooterPositions | undefined;
+		stackType: StackType | undefined;
+		stackRange: StackRange | undefined;
 		driveType: DriveType | undefined;
+		balanceTime: number | undefined;
+		everybot: boolean | undefined;
 		comments: string;
 	};
 	images: string[];

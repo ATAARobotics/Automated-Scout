@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 use std::collections::HashMap;
 
-use crate::data::{DriveType, MatchType, ShooterCapability, ShooterPositions, ChargeStation};
+use crate::data::{DriveType, StackRange, StackType, MatchType, ChargeStation};
 use serde::{Deserialize, Serialize};
 
 use crate::Database;
@@ -58,24 +58,22 @@ pub struct TeamInfo {
 	pub average_pit_business: f32,
 	pub average_pit_chaos: f32,
 	pub friendly: bool,
-	pub claimed_auto_ball_count: Option<u32>,
-	pub claimed_cube_capacity: Option<u32>,
-	pub claimed_climb_time: Option<u32>,
-	pub claimed_climb_everybot: bool,
+	pub claimed_balance_time: Option<u32>,
+	pub claimed_everybot: bool,
 	pub claimed_drive_type: Option<DriveType>,
-	pub claimed_shooter_low: bool,
-	pub claimed_shooter_high: bool,
-	pub claimed_shooter_hub: bool,
-	pub claimed_shooter_far: bool,
-	pub original_auto_ball_count: Option<u32>,
-	pub original_cube_capacity: Option<u32>,
-	pub original_climb_time: Option<u32>,
-	pub original_climb_everybot: bool,
+	pub claimed_stack_cone: bool,
+	pub claimed_stack_cube: bool,
+	pub claimed_stack_hybrid: bool,
+	pub claimed_stack_middle: bool,
+	pub claimed_stack_high: bool,
+	pub original_balance_time: Option<u32>,
+	pub original_everybot: bool,
 	pub original_drive_type: Option<DriveType>,
-	pub original_shooter_low: bool,
-	pub original_shooter_high: bool,
-	pub original_shooter_hub: bool,
-	pub original_shooter_far: bool,
+	pub original_stack_cone: bool,
+	pub original_stack_cube: bool,
+	pub original_stack_hybrid: bool,
+	pub original_stack_middle: bool,
+	pub original_stack_high: bool,
 	pub matches: u32,
 	teleop_scoring_matches: u32,
 	auto_scoring_matches: u32,
@@ -367,32 +365,47 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		team.average_people_in_pit /= total as f32;
 		team.average_pit_business /= total as f32;
 		team.average_pit_chaos /= total as f32;
-		team.claimed_auto_ball_count = last.robot.auto_ball_count;
-		team.claimed_cube_capacity = last.robot.cube_capacity;
-		team.claimed_climb_time = last.robot.climb_time;
-		team.claimed_climb_everybot = last.robot.climb_everybot.unwrap_or(false);
-		team.claimed_shooter_low = last.robot.shooter_capability == Some(ShooterCapability::Low)
-			|| last.robot.shooter_capability == Some(ShooterCapability::Both);
-		team.claimed_shooter_high = last.robot.shooter_capability == Some(ShooterCapability::High)
-			|| last.robot.shooter_capability == Some(ShooterCapability::Both);
-		team.claimed_shooter_hub = last.robot.shooter_range == Some(ShooterPositions::Hub)
-			|| last.robot.shooter_range == Some(ShooterPositions::Both);
-		team.claimed_shooter_far = last.robot.shooter_range == Some(ShooterPositions::Far)
-			|| last.robot.shooter_range == Some(ShooterPositions::Both);
+		team.claimed_balance_time = last.robot.balance_time;
+		team.claimed_everybot = last.robot.everybot.unwrap_or(false);
+		// If anything other then None is selected, hybrid is assumed to be stackable
+		team.claimed_stack_hybrid = last.robot.stack_range == Some(StackRange::Hybrid)
+			|| last.robot.stack_range == Some(StackRange::Middle)
+			|| last.robot.stack_range == Some(StackRange::High)
+			|| last.robot.stack_range == Some(StackRange::All);
+		// If middle or both is selected, Middle is assumed to be stackable
+		team.claimed_stack_middle = last.robot.stack_range == Some(StackRange::Middle)
+			|| last.robot.stack_range == Some(StackRange::All);
+		// If high or both is selected, High is assumed to be stackable
+		team.claimed_stack_high = last.robot.stack_range == Some(StackRange::High)
+			|| last.robot.stack_range == Some(StackRange::All);
+		// If cone or both is selected, Cone is assumed to be stackable
+		team.claimed_stack_cone = last.robot.stack_type == Some(StackType::Cone)
+			|| last.robot.stack_type == Some(StackType::Both);
+		// If cube or both is selected, Cube is assumed to be stackable
+		team.claimed_stack_cube = last.robot.stack_type == Some(StackType::Cube)
+			|| last.robot.stack_type == Some(StackType::Both);
+
+
 		team.claimed_drive_type = last.robot.drive_type;
-		team.original_auto_ball_count = first.robot.auto_ball_count;
-		team.original_cube_capacity = first.robot.cube_capacity;
-		team.original_climb_time = first.robot.climb_time;
-		team.original_climb_everybot = first.robot.climb_everybot.unwrap_or(false);
-		team.original_shooter_low = first.robot.shooter_capability == Some(ShooterCapability::Low)
-			|| first.robot.shooter_capability == Some(ShooterCapability::Both);
-		team.original_shooter_high = first.robot.shooter_capability
-			== Some(ShooterCapability::High)
-			|| first.robot.shooter_capability == Some(ShooterCapability::Both);
-		team.original_shooter_hub = first.robot.shooter_range == Some(ShooterPositions::Hub)
-			|| first.robot.shooter_range == Some(ShooterPositions::Both);
-		team.original_shooter_far = first.robot.shooter_range == Some(ShooterPositions::Far)
-			|| first.robot.shooter_range == Some(ShooterPositions::Both);
+		team.original_balance_time = first.robot.balance_time;
+		team.original_everybot = first.robot.everybot.unwrap_or(false);
+		// If anything other then None is selected, hybrid is assumed to be stackable
+		team.original_stack_hybrid = last.robot.stack_range == Some(StackRange::Hybrid)
+			|| last.robot.stack_range == Some(StackRange::Middle)
+			|| last.robot.stack_range == Some(StackRange::High)
+			|| last.robot.stack_range == Some(StackRange::All);
+		// If middle or both is selected, Middle is assumed to be stackable
+		team.original_stack_middle = last.robot.stack_range == Some(StackRange::Middle)
+			|| last.robot.stack_range == Some(StackRange::All);
+		// If high or both is selected, High is assumed to be stackable
+		team.original_stack_high = last.robot.stack_range == Some(StackRange::High)
+			|| last.robot.stack_range == Some(StackRange::All);
+		// If cone or both is selected, Cone is assumed to be stackable
+		team.original_stack_cone = last.robot.stack_type == Some(StackType::Cone)
+			|| last.robot.stack_type == Some(StackType::Both);
+		// If cube or both is selected, Cube is assumed to be stackable
+		team.original_stack_cube = last.robot.stack_type == Some(StackType::Cube)
+			|| last.robot.stack_type == Some(StackType::Both);
 		team.original_drive_type = first.robot.drive_type;
 	}
 	let mut matches_by_game = HashMap::new();

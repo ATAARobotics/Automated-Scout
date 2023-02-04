@@ -5,6 +5,26 @@ import { TeamInfo } from "../lib";
 import { formatPercent, formatRatio, formatProbList } from "../util";
 import { Link } from "react-router-dom";
 
+
+/**
+ * To Do List:
+ * Know how to do:
+ * Figure out what key information we want to display on automated scout
+ * Automated Scout visual update?
+ * Fix park to be part of the charge station selection for teleop :( 
+ * Rearrange buttons? 
+ * Code readability :( 
+ * 
+ * Don't know how to do
+ * Add match notes to team page
+ * A way to check individual match data?
+ * 
+ * Do later
+ * Create static versions that always run
+ * Get info if someone on team balanced and whether to exclude auto balance information because of that
+ * Get blue alliance data
+ */
+
 /**
  * Get a color for a team's score relative to the average score.
  *

@@ -51,32 +51,32 @@ impl Display for ChargeStation {
 #[serde(rename_all = "camelCase")]
 #[serde(from = "u32")]
 #[serde(into = "u32")]
-pub enum ShooterCapability {
+pub enum StackType {
 	None = 0,
-	Low = 1,
-	High = 2,
+	Cone = 1,
+	Cube = 2,
 	Both = 3,
 }
 
-impl From<u32> for ShooterCapability {
+impl From<u32> for StackType {
 	fn from(value: u32) -> Self {
 		match value {
-			0 => ShooterCapability::None,
-			1 => ShooterCapability::Low,
-			2 => ShooterCapability::High,
-			3 => ShooterCapability::Both,
-			_ => panic!("Invalid shooter capability: {}", value),
+			0 => StackType::None,
+			1 => StackType::Cone,
+			2 => StackType::Cube,
+			3 => StackType::Both,
+			_ => panic!("Invalid Stack Type: {}", value),
 		}
 	}
 }
 
-impl From<ShooterCapability> for u32 {
-	fn from(value: ShooterCapability) -> Self {
+impl From<StackType> for u32 {
+	fn from(value: StackType) -> Self {
 		match value {
-			ShooterCapability::None => 0,
-			ShooterCapability::Low => 1,
-			ShooterCapability::High => 2,
-			ShooterCapability::Both => 3,
+			StackType::None => 0,
+			StackType::Cone => 1,
+			StackType::Cube => 2,
+			StackType::Both => 3,
 		}
 	}
 }
@@ -85,38 +85,41 @@ impl From<ShooterCapability> for u32 {
 #[serde(rename_all = "camelCase")]
 #[serde(from = "u32")]
 #[serde(into = "u32")]
-pub enum ShooterPositions {
+pub enum StackRange {
 	None = 0,
-	Hub = 1,
-	Far = 2,
-	Both = 3,
+	Hybrid = 1,
+	Middle = 2,
+	High = 3,
+	All = 4,
 }
 
-impl Default for ShooterPositions {
+impl Default for StackRange {
 	fn default() -> Self {
-		ShooterPositions::None
+		StackRange::None
 	}
 }
 
-impl From<u32> for ShooterPositions {
+impl From<u32> for StackRange {
 	fn from(value: u32) -> Self {
 		match value {
-			0 => ShooterPositions::None,
-			1 => ShooterPositions::Hub,
-			2 => ShooterPositions::Far,
-			3 => ShooterPositions::Both,
-			_ => panic!("Invalid shooter positions value: {}", value),
+			0 => StackRange::None,
+			1 => StackRange::Hybrid,
+			2 => StackRange::Middle,
+			3 => StackRange::High,
+			4 => StackRange::All,
+			_ => panic!("Invalid Stack Range value: {}", value),
 		}
 	}
 }
 
-impl From<ShooterPositions> for u32 {
-	fn from(value: ShooterPositions) -> Self {
+impl From<StackRange> for u32 {
+	fn from(value: StackRange) -> Self {
 		match value {
-			ShooterPositions::None => 0,
-			ShooterPositions::Hub => 1,
-			ShooterPositions::Far => 2,
-			ShooterPositions::Both => 3,
+			StackRange::None => 0,
+			StackRange::Hybrid => 1,
+			StackRange::Middle => 2,
+			StackRange::High => 3,
+			StackRange::All => 4,
 		}
 	}
 }
@@ -216,14 +219,11 @@ pub struct Pit {
 #[serde(rename_all = "camelCase")]
 #[serde(default)]
 pub struct Robot {
-	pub auto_ball_count: Option<u32>,
-	pub cube_capacity: Option<u32>,
-	pub climb_time: Option<u32>,
-	pub climb_height: Option<u32>,
-	pub climb_everybot: Option<bool>,
-	pub shooter_capability: Option<ShooterCapability>,
-	pub shooter_range: Option<ShooterPositions>,
+	pub stack_type: Option<StackType>,
+	pub stack_range: Option<StackRange>,
 	pub drive_type: Option<DriveType>,
+	pub balance_time: Option<u32>,
+	pub everybot: Option<bool>,
 	pub comments: String,
 }
 
