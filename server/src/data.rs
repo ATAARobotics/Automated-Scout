@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
 
+// Setting up MatchType
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum MatchType {
@@ -22,30 +23,57 @@ impl Display for MatchType {
 		}
 	}
 }
-
+// Setting up AutoChargeStation
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub enum ChargeStation {
+pub enum AutoChargeStation {
 	Off,
 	On,
 	Charged,
 }
 
-impl Default for ChargeStation {
+impl Default for AutoChargeStation {
 	fn default() -> Self {
-		ChargeStation::Off
+		AutoChargeStation::Off
 	}
 }
 
-impl Display for ChargeStation {
+impl Display for AutoChargeStation {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		match self {
-			ChargeStation::Off => write!(f, "Off"),
-			ChargeStation::On => write!(f, "On"),
-			ChargeStation::Charged => write!(f, "Charged"),
+			AutoChargeStation::Off => write!(f, "Off"),
+			AutoChargeStation::On => write!(f, "On"),
+			AutoChargeStation::Charged => write!(f, "Charged"),
 		}
 	}
 }
+// Setting up TeleopChargeStation
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum TeleopChargeStation {
+	Off,
+	Parked,
+	On,
+	Charged,
+}
+
+impl Default for TeleopChargeStation {
+	fn default() -> Self {
+		TeleopChargeStation::Off
+	}
+}
+
+impl Display for TeleopChargeStation {
+	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+		match self {
+			TeleopChargeStation::Off => write!(f, "Off"),
+			TeleopChargeStation::Parked => write!(f, "Parked"),
+			TeleopChargeStation::On => write!(f, "On"),
+			TeleopChargeStation::Charged => write!(f, "Charged"),
+		}
+	}
+}
+// Setting up PickupType
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[serde(from = "u32")]
@@ -79,7 +107,7 @@ impl From<PickupType> for u32 {
 		}
 	}
 }
-
+// Setting up FloorPickupRange
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[serde(from = "u32")]
@@ -119,6 +147,7 @@ impl From<FloorPickupRange> for u32 {
 		}
 	}
 }
+// Setting up HumanPickupRange
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[serde(from = "u32")]
@@ -158,6 +187,7 @@ impl From<HumanPickupRange> for u32 {
 		}
 	}
 }
+// Setting up StackType
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[serde(from = "u32")]
@@ -191,7 +221,7 @@ impl From<StackType> for u32 {
 		}
 	}
 }
-
+// Setting up StackRange
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[serde(from = "u32")]
@@ -234,7 +264,7 @@ impl From<StackRange> for u32 {
 		}
 	}
 }
-
+// Setting up DriveType
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[serde(from = "u32")]
@@ -266,12 +296,13 @@ impl From<DriveType> for u32 {
 	}
 }
 
+// Setting up Auto Structure, match info can pull from here
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[serde(default)]
 pub struct Auto {
 	pub exited_tarmac: bool,
-	pub charge_station: ChargeStation,
+	pub auto_charge_station: AutoChargeStation,
 	pub cone_picked_up: u32,
 	pub cube_picked_up: u32,
 	pub hybrid_scored: u32,
@@ -280,7 +311,7 @@ pub struct Auto {
 	pub high_cube_scored: u32,
 	pub high_cone_scored: u32,
 }
-
+// Setting up Teleop Structure, match info can pull from here
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[serde(default)]
@@ -293,11 +324,11 @@ pub struct Teleop {
 	pub high_cube_scored: u32,
 	pub high_cone_scored: u32,
 	pub parked: bool,
-	pub charge_station: ChargeStation,
+	pub teleop_charge_station: TeleopChargeStation,
 }
 
 
-
+// Setting up Match Info, this consists of values mentioned earlier plus a few others
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[serde(default)]
@@ -319,6 +350,7 @@ pub struct MatchInfo {
 	pub last_modified_time: u64,
 }
 
+// Setting up Pit (Pit Scouting) structure
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[serde(default)]
@@ -330,6 +362,7 @@ pub struct Pit {
 	pub comments: String,
 }
 
+// Setting up Robot (Pit Scouting) structure, contains a few types from earlier inside of it
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[serde(default)]
@@ -345,6 +378,7 @@ pub struct Robot {
 	pub comments: String,
 }
 
+// Setting up RobotInfo (Pit scouting), contains Pit and Robot structure
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[serde(default)]
@@ -359,6 +393,7 @@ pub struct RobotInfo {
 	pub last_modified_time: u64,
 }
 
+// Setting up general Info
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")]
 #[serde(tag = "type")]
@@ -373,7 +408,9 @@ impl Default for Info {
 	}
 }
 
+// Convert match info to string
 impl MatchInfo {
+	// Don't know what header does, has old data, look at later
 	pub const HEADER: &'static str = "match_number,match_category,team,auto_exited_tarmac,auto_starting_location,auto_cells_acquired,auto_low_goal_attempts,auto_low_goal_shots,auto_high_goal_attempts,auto_high_goal_shots,teleop_cells_acquired,teleop_low_goal_attempts,teleop_low_goal_shots,teleop_high_goal_attempts,teleop_high_goal_shots,highest_climb_attempted,highest_climb_scored,fell,speed,stability,defence,is_primary_defence,was_broken,was_disabled,notes\n";
 	pub fn write_csv_line(&self) -> String {
 		vec![
@@ -382,7 +419,7 @@ impl MatchInfo {
 			self.team_number.to_string(),
 			
 			self.auto.exited_tarmac.to_string(),
-			self.auto.charge_station.to_string(),
+			self.auto.auto_charge_station.to_string(),
 			self.auto.cone_picked_up.to_string(),
 			self.auto.cube_picked_up.to_string(),
 			self.auto.hybrid_scored.to_string(),
@@ -399,7 +436,7 @@ impl MatchInfo {
 			self.teleop.high_cube_scored.to_string(),
 			self.teleop.high_cone_scored.to_string(),
 			self.teleop.parked.to_string(),
-			self.teleop.charge_station.to_string(),
+			self.teleop.teleop_charge_station.to_string(),
 			
 			self.speed.to_string(),
 			self.stability.to_string(),

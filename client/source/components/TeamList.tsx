@@ -5,16 +5,13 @@ import { TeamInfo } from "../lib";
 import { formatPercent, formatRatio, formatProbList } from "../util";
 import { Link } from "react-router-dom";
 
+// This file displays the information on the main page.
 
 /**
  * To Do List:
  * Know how to do:
  * Figure out what key information we want to display on automated scout
  * Automated Scout visual update?
- * Fix park to be part of the charge station selection for teleop :( 
- * Rearrange buttons? 
- * Code readability :( 
- * Track how many gamepieces picked up
  * 
  * Don't know how to do:
  * Add match notes to team page
@@ -162,13 +159,14 @@ const order: [
 	[
 		"Teleop Charge",
 		(match: TeamInfo) =>
-			match.chargeStationTeleopOff * 3 +
+			match.chargeStationTeleopOff * 4 +
+			match.chargeStationTeleopParked * 3+
 			match.chargeStationTeleopOn * 2 +
 			match.chargeStationTeleopCharged,
 		(match: TeamInfo) =>
 			formatProbList(
-				["Off", "On", "Charged"],
-				[match.chargeStationTeleopOff, match.chargeStationTeleopOn, match.chargeStationTeleopCharged]
+				["Off", "Parked", "On", "Charged"],
+				[match.chargeStationTeleopOff, match.chargeStationTeleopParked, match.chargeStationTeleopOn, match.chargeStationTeleopCharged]
 			),
 		1,
 		false,

@@ -1,13 +1,15 @@
 use std::cmp::Ordering;
 use std::collections::HashMap;
 
-use crate::data::{DriveType, FloorPickupRange, HumanPickupRange, PickupType, StackRange, StackType, MatchType, ChargeStation};
+// Make sure to edit this with anything in the data file!
+use crate::data::{DriveType, FloorPickupRange, HumanPickupRange, PickupType, StackRange, StackType, MatchType, AutoChargeStation, TeleopChargeStation};
 use serde::{Deserialize, Serialize};
 
 use crate::Database;
 
 #[derive(Debug, PartialEq, Default, Serialize)]
 #[serde(rename_all = "camelCase")]
+// Setting Variables - These are not actually taking averages, the averages are overwritten into the variables in this file! Must match camelCase in lib file
 pub struct TeamInfo {
 	pub team_number: u32,
 	pub team_name: Option<String>,
@@ -47,9 +49,9 @@ pub struct TeamInfo {
 	pub charge_station_auto_on: f32,
 	pub charge_station_auto_charged: f32,
 	pub charge_station_teleop_off: f32,
+	pub charge_station_teleop_parked: f32,
 	pub charge_station_teleop_on: f32,
 	pub charge_station_teleop_charged: f32,
-	pub parked: bool,
 	pub opr: f32,
 	pub dpr: f32,
 	pub win_count: u32,
@@ -58,10 +60,12 @@ pub struct TeamInfo {
 	pub overall_stability: f32,
 	pub overall_defence: f32,
 	pub ranking_points: f32,
+	// Pit Scouting
 	pub average_people_in_pit: f32,
 	pub average_pit_business: f32,
 	pub average_pit_chaos: f32,
 	pub friendly: bool,
+	// Claimed is the initial value, it overrides into original if the time is newer
 	pub claimed_balance_time: Option<u32>,
 	pub claimed_everybot: bool,
 	pub claimed_drive_type: Option<DriveType>,
@@ -102,6 +106,7 @@ pub struct TeamInfo {
 	teleop_high_scoring_matches: u32,
 }
 
+// Team info contains the team number and the specific data for the variable you are checking, does not contain match info!
 impl TeamInfo {
 	fn new(team_number: u32) -> Self {
 		Self {
@@ -128,7 +133,7 @@ impl Ord for TeamInfo {
 		self.partial_cmp(other).unwrap()
 	}
 }
-
+// The blue alliance data
 #[derive(Debug, Deserialize)]
 struct RawOprData {
 	dprs: HashMap<String, f32>,
@@ -335,7 +340,7 @@ fn get_tba_data() -> (HashMap<u32, TbaTeam>, HashMap<(MatchType, u32), TbaMatch>
 
 	(tba_data, matches)
 }
-
+// Start of data analysis, note that match info syntax takes in the fact whether its auto or teleop, and uses the variables in the lib file!
 pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 	let mut teams = HashMap::new();
 	let mut team_info_by_team = HashMap::new();
@@ -345,6 +350,7 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 			.or_insert_with(Vec::new);
 		infos.push(team_info);
 	}
+	// Prioritize newer data
 	for (team_number, infos) in team_info_by_team {
 		let first = infos
 			.iter()
@@ -371,6 +377,7 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 			.or_insert_with(|| TeamInfo::new(team_number));
 		let mut total = 0;
 		team.friendly = true;
+		// Set averages and newest data for pit scouting
 		for info in &infos {
 			total += 1;
 			team.average_people_in_pit += info.pit.pit_people.unwrap_or(0) as f32;
@@ -381,6 +388,8 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		team.average_people_in_pit /= total as f32;
 		team.average_pit_business /= total as f32;
 		team.average_pit_chaos /= total as f32;
+
+		// For claimed stats
 		team.claimed_balance_time = last.robot.balance_time;
 		team.claimed_everybot = last.robot.everybot.unwrap_or(false);
 		// If elsewhere or both is selected, elsewhere is assumed to be pickupable
@@ -419,8 +428,9 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		team.claimed_stack_cube = last.robot.stack_type == Some(StackType::Cube)
 			|| last.robot.stack_type == Some(StackType::Both);
 
-
 		team.claimed_drive_type = last.robot.drive_type;
+
+		// For original stats
 		team.original_balance_time = first.robot.balance_time;
 		team.original_everybot = first.robot.everybot.unwrap_or(false);
 		// If elsewhere or both is selected, elsewhere is assumed to be pickupable
@@ -461,73 +471,84 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 			|| last.robot.stack_type == Some(StackType::Both);
 		team.original_drive_type = first.robot.drive_type;
 	}
+
+	// Match info
 	let mut matches_by_game = HashMap::new();
 	for match_info in database.get_all_matches().flatten() {
 		let team = teams
 			.entry(match_info.team_number)
 			.or_insert_with(|| TeamInfo::new(match_info.team_number));
-		if match_info.auto.charge_station == ChargeStation::Off {
+			// Charge station calculations, detects how many matches have a certain stat for charge station
+		if match_info.auto.auto_charge_station == AutoChargeStation::Off {
 			team.charge_station_auto_off += 1.0;
 		}
-		if match_info.auto.charge_station == ChargeStation::On {
+		if match_info.auto.auto_charge_station == AutoChargeStation::On {
 			team.charge_station_auto_on += 1.0;
 		}
-		if match_info.auto.charge_station == ChargeStation::Charged {
+		if match_info.auto.auto_charge_station == AutoChargeStation::Charged {
 			team.charge_station_auto_charged += 1.0;
 		}
-		if match_info.teleop.charge_station == ChargeStation::Off {
+		if match_info.teleop.teleop_charge_station == TeleopChargeStation::Off {
 			team.charge_station_teleop_off += 1.0;
 		}
-		if match_info.teleop.charge_station == ChargeStation::On {
+		if match_info.teleop.teleop_charge_station == TeleopChargeStation::Parked {
+			team.charge_station_teleop_parked += 1.0;
+		}
+		if match_info.teleop.teleop_charge_station == TeleopChargeStation::On {
 			team.charge_station_teleop_on += 1.0;
 		}
-		if match_info.teleop.charge_station == ChargeStation::Charged {
+		if match_info.teleop.teleop_charge_station == TeleopChargeStation::Charged {
 			team.charge_station_teleop_charged += 1.0;
 		}
 		
 
-
+		// Calculate auto score by taking all the information, and for scoring gamepieces multiplying the amount scored by the point value
 		let auto_score = match_info.auto.hybrid_scored as f32 * 3.0
 			+ match_info.auto.middle_cube_scored as f32 * 4.0
 			+ match_info.auto.middle_cone_scored as f32 * 4.0
 			+ match_info.auto.high_cube_scored as f32 * 6.0
 			+ match_info.auto.high_cone_scored as f32 * 6.0
 
+		// Add points to auto score for exiting tarmac and charge station
 			+ if match_info.auto.exited_tarmac {
 				3.0
 			} else {
 				0.0
 			}
 
-			+ if match_info.auto.charge_station == ChargeStation::On{
+			+ if match_info.auto.auto_charge_station == AutoChargeStation::On{
 				8.0
-			} else if match_info.auto.charge_station == ChargeStation::Charged {
+			} else if match_info.auto.auto_charge_station == AutoChargeStation::Charged {
 				12.0
 			} else {
 				0.0
 			};	
 
+		// Calculate teleop score by taking all the information, and for scoring gamepieces multiplying the amount scored by the point value
 			let teleop_score = match_info.teleop.hybrid_scored as f32 * 2.0
 			+ match_info.teleop.middle_cube_scored as f32 * 3.0
 			+ match_info.teleop.middle_cone_scored as f32 * 3.0
 			+ match_info.teleop.high_cube_scored as f32 * 5.0
 			+ match_info.teleop.high_cone_scored as f32 * 5.0
 
-			+ if match_info.teleop.charge_station == ChargeStation::On{
+		// Add amount of points charge station is worth
+			+ if match_info.teleop.teleop_charge_station == TeleopChargeStation::On{
 				6.0
-			} else if match_info.teleop.charge_station == ChargeStation::Charged {
+			} else if match_info.teleop.teleop_charge_station == TeleopChargeStation::Charged {
 				10.0
-			} else if match_info.teleop.parked{
+			} else if match_info.teleop.teleop_charge_station == TeleopChargeStation::Parked{
 				2.0
 			} else {
 				0.0
 			};	
 
 		
-
+	// Add the calculated scores to the average variable. 
+	// Note: This is not the total average yet, just the sum of all points scored over all time for a team!
 		team.average_auto_score += auto_score;
 		team.average_teleop_score += teleop_score;
 		
+	// Calculate specific amounts of auto points scored for specific gamepieces and scoring areas
 		let auto_hybrid =
 			match_info.auto.hybrid_scored as f32 * 3.0;
 		let auto_middle =
@@ -539,21 +560,26 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		let auto_cube =
 			match_info.auto.middle_cube_scored as f32 * 4.0 + match_info.auto.high_cube_scored as f32 * 6.0;
 
+	// Add calculated auto scores to average variable.
+	// Note: This is not the total average yet, just the sum of all auto points scored over all time for a team!
 		team.average_auto_hybrid_score += auto_hybrid;
 		team.average_auto_middle_score += auto_middle;
 		team.average_auto_high_score += auto_high;
 		team.average_auto_cone_score += auto_cone;
 		team.average_auto_cube_score += auto_cube;
+	// Add match info to team info, these stats don't need more changing other then adding point value
 		team.average_auto_middle_cone_score += match_info.auto.middle_cone_scored as f32 * 4.0;
 		team.average_auto_middle_cube_score += match_info.auto.middle_cube_scored as f32 * 4.0;
 		team.average_auto_high_cone_score += match_info.auto.high_cone_scored as f32 * 6.0;
 		team.average_auto_high_cube_score += match_info.auto.high_cube_scored as f32 * 6.0;
-
+	
+	// Add match info to team info, these stats don't need changing
 		team.average_auto_cones_picked_up += match_info.auto.cone_picked_up as f32;
 		team.average_auto_cubes_picked_up += match_info.auto.cube_picked_up as f32;
 		team.average_teleop_cones_picked_up += match_info.teleop.cone_picked_up as f32;
 		team.average_teleop_cubes_picked_up += match_info.teleop.cube_picked_up as f32;
-
+	
+	// Calculate specific amounts of teleop points scored for specific gamepieces and scoring areas
 		let teleop_hybrid =
 			match_info.teleop.hybrid_scored as f32 * 2.0;
 		let teleop_middle =
@@ -565,29 +591,34 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		let teleop_cube =
 			match_info.teleop.middle_cube_scored as f32 * 3.0 + match_info.teleop.high_cube_scored as f32 * 5.0;
 
+	// Add calculated teleop scores to average variable.
+	// Note: This is not the total average yet, just the sum of all teleop points scored over all time for a team!
 		team.average_teleop_hybrid_score += teleop_hybrid;
 		team.average_teleop_middle_score += teleop_middle;
 		team.average_teleop_high_score += teleop_high;
 		team.average_teleop_cone_score += teleop_cone;
 		team.average_teleop_cube_score += teleop_cube;
+	// Add match info to team info, these stats don't need more changing other then adding point value
 		team.average_teleop_middle_cone_score += match_info.teleop.middle_cone_scored as f32 * 3.0;
 		team.average_teleop_middle_cube_score += match_info.teleop.middle_cube_scored as f32 * 3.0;
 		team.average_teleop_high_cone_score += match_info.teleop.high_cone_scored as f32 * 5.0;
 		team.average_teleop_high_cube_score += match_info.teleop.high_cube_scored as f32 * 5.0;
+	// Add both auto and teleop scores to get total amount variable, again this is just total overall score not average
 		team.average_cone_score += auto_cone + teleop_cone;
 		team.average_cube_score += auto_cube + teleop_cube;
-
 		team.average_hybrid_score += auto_hybrid + teleop_hybrid;
 		team.average_middle_score += auto_middle + teleop_middle;
 		team.average_high_score += auto_high + teleop_high;
 		
 
-		
+	// Calculate amount of overall stats, the +1.0 is because f32 is a range of 0-4 and we want a range of 1-5
 		team.overall_speed += match_info.speed as f32 + 1.0;
 		team.overall_stability += match_info.stability as f32 + 1.0;
+	// Check to make sure defence value is given, as we don't want data for when defence is not done in a match
 		if let Some(v) = match_info.defence {
 			team.overall_defence += v + 1.0;
 		}
+	// Add to match increment
 		team.matches += 1;
 		matches_by_game
 			.entry((match_info.match_category, match_info.match_number))
@@ -595,7 +626,9 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 			.push((match_info.team_number, teleop_score));
 	}
 	let (tba_teams, tba_matches) = get_tba_data();
+	// The "fun" part
 	for team_info in teams.values_mut() {
+	// For each stat, divide the overall number from over all matches by the match count to get the proper average
 		let match_count = (team_info.matches as f32).max(1.0);
 		team_info.average_auto_score /= match_count;
 		team_info.average_teleop_score /= match_count;
@@ -633,9 +666,11 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		team_info.charge_station_auto_on /= match_count;
 		team_info.charge_station_auto_charged /= match_count;
 		team_info.charge_station_teleop_off /= match_count;
+		team_info.charge_station_teleop_parked /= match_count;
 		team_info.charge_station_teleop_on /= match_count;
 		team_info.charge_station_teleop_charged /= match_count;
-
+		
+		// TBA Data
 		if let Some(tba_team) = tba_teams.get(&team_info.team_number) {
 			team_info.opr = tba_team.opr;
 			team_info.dpr = tba_team.dpr;
@@ -647,6 +682,7 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 			team_info.team_rookie_year = Some(tba_team.rookie_year);
 		}
 	}
+	// Defence score calculation by taking into account rated defence and TBA Data, has not been touched
 	for ((match_type, match_id), matches) in matches_by_game.iter() {
 		if let Some(alliances) = tba_matches.get(&(*match_type, *match_id)) {
 			for (team_number, ..) in matches {
@@ -680,6 +716,7 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 						allys += 1;
 					}
 				}
+				// Luck score calculation, if ally scores are better then luck goes up, if worse luck goes down
 				let team = teams.get_mut(team_number).unwrap();
 				if defended_teams > 0 {
 					team.average_luck_score += ally_scores / (defended_teams as f32);
@@ -693,6 +730,7 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		}
 	}
 	for team_info in teams.values_mut() {
+	// Printing stats, this can be removed to clear terminal if wished
 		println!(
 			"{}, {}, {}",
 			team_info.average_defence_score,
@@ -704,11 +742,13 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 			team_info.average_luck_score /= team_info.defended_teams as f32;
 		}
 	}
+	// Setting up average team, the average team has the average stats of all teams
 	let mut average = TeamInfo {
 		team_number: 0,
 		..TeamInfo::default()
 	};
 	for team_info in teams.values() {
+	// Add onto the average score the averages of all teams
 		average.average_auto_score += team_info.average_auto_score;
 		average.average_teleop_score += team_info.average_teleop_score;
 		average.average_auto_cones_picked_up += team_info.average_auto_cones_picked_up;
@@ -741,6 +781,7 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		average.charge_station_auto_on += team_info.charge_station_auto_on;
 		average.charge_station_auto_charged += team_info.charge_station_auto_charged;
 		average.charge_station_teleop_off += team_info.charge_station_teleop_off;
+		average.charge_station_teleop_parked += team_info.charge_station_teleop_parked;
 		average.charge_station_teleop_on += team_info.charge_station_teleop_on;
 		average.charge_station_teleop_charged += team_info.charge_station_teleop_charged;
 		average.opr += team_info.opr;
@@ -754,6 +795,7 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		average.matches += team_info.matches;
 	}
 	{
+	// For every team that has been scouted, divide the average team by that amount
 		let total_teams = (teams.len() as u32).max(1);
 		let total_teams_f = (teams.len() as f32).max(1.0);
 		average.average_auto_score /= total_teams_f;
@@ -793,6 +835,7 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		average.charge_station_auto_on /= total_teams_f;
 		average.charge_station_teleop_charged /= total_teams_f;
 		average.charge_station_teleop_off /= total_teams_f;
+		average.charge_station_teleop_parked /= total_teams_f;
 		average.charge_station_teleop_on /= total_teams_f;
 		average.opr /= total_teams_f;
 		average.dpr /= total_teams_f;
@@ -804,8 +847,8 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		average.ranking_points /= total_teams_f;
 		average.matches /= total_teams;
 	}
+	// Put it all in team list to collect the data and push
 	let mut team_list: Vec<TeamInfo> = teams.into_values().collect();
-	println!("{}", average.average_auto_score);
 	team_list.push(average);
 	team_list.sort();
 	team_list

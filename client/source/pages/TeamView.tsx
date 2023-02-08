@@ -4,7 +4,7 @@ import TitleIcon from "../components/TitleIcon";
 import { fetchState } from "../util";
 import { FullTeamInfo, MatchInfo, TeamInfo } from "../lib";
 import { useParams } from "react-router";
-
+// This is for the team specific page, contains pit scouting data mostly
 function KeyValueBox(props: {
 	label: string;
 	value: number | boolean | string | undefined;
@@ -57,6 +57,7 @@ function TeamView(): React.ReactElement {
 						</>
 					);
 				} else {
+					// ???
 					const ourData = fullTeamInfo.result.matches.flatMap((match) =>
 						match.blueTeams
 							.concat(match.redTeams)
@@ -68,6 +69,7 @@ function TeamView(): React.ReactElement {
 					const teamInfo = teamInfos.result.find(
 						(team) => team.teamNumber === teamNumber
 					) as TeamInfo;
+					// Making a construct of a few values, so that if the data is unknown it will show as unknown
 					const pickupType = [
 						"None",
 						"Cone",
@@ -110,6 +112,8 @@ function TeamView(): React.ReactElement {
 						"Other",
 						"Unknown",
 					];
+					// Returns this info onto the site. Anything in here will be put on the site including comments!
+					// Match scouting comments currently don't display on the site for some reason
 					return (
 						<>
 							<h1>
@@ -146,7 +150,6 @@ function TeamView(): React.ReactElement {
 										return <span key={`pit-${i}`} />;
 									}
 								})}
-
 								{ourData.map((matchInfo, i) => {
 									if (matchInfo.notes.length > 0) {
 										return (

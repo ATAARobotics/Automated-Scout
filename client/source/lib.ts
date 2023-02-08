@@ -1,3 +1,4 @@
+// Exporting Pit Scouting values types, to clarify which values are recieved by Scouty McScout in the database file
 export type MatchType = "qualification" | "practice";
 export type PickupType = 0 | 1 | 2 | 3;
 export type FloorPickupRange = 0 | 1 | 2 | 3;
@@ -7,6 +8,7 @@ export type StackRange = 0 | 1 | 2 | 3 | 4;
 export type BusinessLevel = 0 | 1 | 2;
 export type DriveType = 0 | 1 | 2;
 
+// Exporting TeamInfo, these are the same as the variables in analysis
 export interface TeamInfo {
 	teamNumber: number;
 	teamName: string | null;
@@ -46,9 +48,9 @@ export interface TeamInfo {
 	chargeStationAutoOn: number;
 	chargeStationAutoCharged: number;
 	chargeStationTeleopOff: number;
+	chargeStationTeleopParked: number;
 	chargeStationTeleopOn: number;
 	chargeStationTeleopCharged: number;
-	parked: boolean;
 	opr: number;
 	dpr: number;
 	winCount: number;
@@ -57,6 +59,7 @@ export interface TeamInfo {
 	overallStability: number;
 	overallDefence: number;
 	rankingPoints: number;
+	// Pit Scouting
 	averagePeopleInPit: number;
 	averagePitBusiness: number;
 	averagePitChaos: number;
@@ -94,6 +97,7 @@ export interface TeamInfo {
 	matches: number;
 }
 
+// Exporting match info, make sure it matches up with the database file in scouty mcscout
 export interface MatchInfo {
 	type: "match_info";
 	match: number;
@@ -101,7 +105,7 @@ export interface MatchInfo {
 	team: number;
 	auto: {
 		exitedTarmac: boolean;
-		chargeStation: "off" | "on" | "charged";
+		autoChargeStation: "off" | "on" | "charged";
 		conePickedUp: number;
 		cubePickedUp: number;
 		hybridScored: number;
@@ -118,8 +122,7 @@ export interface MatchInfo {
 		middleConeScored: number;
 		highCubeScored: number;
 		highConeScored: number;
-		parked: boolean;
-		chargeStation: "off" | "on" | "charged";
+		teleopChargeStation: "off" | "parked" | "on" | "charged";
 	};
 	
 	speed: number;
@@ -132,6 +135,7 @@ export interface MatchInfo {
 	lastModifiedTime: number;
 }
 
+// Exporting pit scouting info, make sure it matches up with the database file in scouty mcscout
 export interface RobotInfo {
 	type: "robot_info";
 	scoutingTime: number;
@@ -158,6 +162,7 @@ export interface RobotInfo {
 	lastModifiedTime: number;
 }
 
+// Exporting team info, taken from TBA
 export interface FullTeamInfo {
 	teamNumber: number;
 	matches: {
