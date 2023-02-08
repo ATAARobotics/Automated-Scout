@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 use std::collections::HashMap;
 
-use crate::data::{DriveType, StackRange, StackType, MatchType, ChargeStation};
+use crate::data::{DriveType, FloorPickupRange, HumanPickupRange, PickupType, StackRange, StackType, MatchType, ChargeStation};
 use serde::{Deserialize, Serialize};
 
 use crate::Database;
@@ -14,6 +14,8 @@ pub struct TeamInfo {
 	pub team_rookie_year: Option<u32>,
 	pub average_auto_score: f32,
 	pub average_teleop_score: f32,
+	pub average_auto_cones_picked_up: f32,
+	pub average_auto_cubes_picked_up: f32,
 	pub average_auto_hybrid_score: f32,
 	pub average_auto_middle_score: f32,
 	pub average_auto_high_score: f32,
@@ -23,6 +25,8 @@ pub struct TeamInfo {
 	pub average_auto_middle_cone_score: f32,
 	pub average_auto_high_cube_score: f32,
 	pub average_auto_high_cone_score: f32,
+	pub average_teleop_cones_picked_up: f32,
+	pub average_teleop_cubes_picked_up: f32,
 	pub average_teleop_hybrid_score: f32,
 	pub average_teleop_middle_score: f32,
 	pub average_teleop_high_score: f32,
@@ -61,6 +65,12 @@ pub struct TeamInfo {
 	pub claimed_balance_time: Option<u32>,
 	pub claimed_everybot: bool,
 	pub claimed_drive_type: Option<DriveType>,
+	pub claimed_pickup_cone: bool,
+	pub claimed_pickup_cube: bool,
+	pub claimed_pickup_elsewhere: bool,
+	pub claimed_pickup_hybrid: bool,
+	pub claimed_pickup_chute: bool,
+	pub claimed_pickup_slide_shelf: bool,
 	pub claimed_stack_cone: bool,
 	pub claimed_stack_cube: bool,
 	pub claimed_stack_hybrid: bool,
@@ -69,6 +79,12 @@ pub struct TeamInfo {
 	pub original_balance_time: Option<u32>,
 	pub original_everybot: bool,
 	pub original_drive_type: Option<DriveType>,
+	pub original_pickup_cone: bool,
+	pub original_pickup_cube: bool,
+	pub original_pickup_elsewhere: bool,
+	pub original_pickup_hybrid: bool,
+	pub original_pickup_chute: bool,
+	pub original_pickup_slide_shelf: bool,
 	pub original_stack_cone: bool,
 	pub original_stack_cube: bool,
 	pub original_stack_hybrid: bool,
@@ -367,6 +383,24 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		team.average_pit_chaos /= total as f32;
 		team.claimed_balance_time = last.robot.balance_time;
 		team.claimed_everybot = last.robot.everybot.unwrap_or(false);
+		// If elsewhere or both is selected, elsewhere is assumed to be pickupable
+		team.claimed_pickup_elsewhere = last.robot.floor_pickup_range == Some(FloorPickupRange::Elsewhere)
+			|| last.robot.floor_pickup_range == Some(FloorPickupRange::Both);
+		// If hybrid or both is selected, hybrid is assumed to be pickupable
+		team.claimed_pickup_hybrid = last.robot.floor_pickup_range == Some(FloorPickupRange::Hybrid)
+			|| last.robot.floor_pickup_range == Some(FloorPickupRange::Both);
+		// If chute or both is selected, chute is assumed to be pickupable
+			team.claimed_pickup_chute = last.robot.human_pickup_range == Some(HumanPickupRange::Chute)
+			|| last.robot.human_pickup_range == Some(HumanPickupRange::Both);
+		// If slide shelf or both is selected, slide shelf is assumed to be pickupable
+		team.claimed_pickup_slide_shelf = last.robot.human_pickup_range == Some(HumanPickupRange::SlideShelf)
+			|| last.robot.human_pickup_range == Some(HumanPickupRange::Both);
+		// If cone or both is selected, Cone is assumed to be pickupable
+		team.claimed_pickup_cone = last.robot.pickup_type == Some(PickupType::Cone)
+			|| last.robot.pickup_type == Some(PickupType::Both);
+		// If cube or both is selected, Cube is assumed to be pickupable
+		team.claimed_pickup_cube = last.robot.pickup_type == Some(PickupType::Cube)
+			|| last.robot.pickup_type == Some(PickupType::Both);
 		// If anything other then None is selected, hybrid is assumed to be stackable
 		team.claimed_stack_hybrid = last.robot.stack_range == Some(StackRange::Hybrid)
 			|| last.robot.stack_range == Some(StackRange::Middle)
@@ -389,6 +423,25 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		team.claimed_drive_type = last.robot.drive_type;
 		team.original_balance_time = first.robot.balance_time;
 		team.original_everybot = first.robot.everybot.unwrap_or(false);
+		// If elsewhere or both is selected, elsewhere is assumed to be pickupable
+		team.original_pickup_elsewhere = last.robot.floor_pickup_range == Some(FloorPickupRange::Elsewhere)
+			|| last.robot.floor_pickup_range == Some(FloorPickupRange::Both);
+		// If hybrid or both is selected, hybrid is assumed to be pickupable
+		team.original_pickup_hybrid = last.robot.floor_pickup_range == Some(FloorPickupRange::Hybrid)
+			|| last.robot.floor_pickup_range == Some(FloorPickupRange::Both);
+		// If chute or both is selected, chute is assumed to be pickupable
+		team.original_pickup_chute = last.robot.human_pickup_range == Some(HumanPickupRange::Chute)
+			|| last.robot.human_pickup_range == Some(HumanPickupRange::Both);
+		// If slide shelf or both is selected, slide shelf is assumed to be pickupable
+		team.original_pickup_slide_shelf = last.robot.human_pickup_range == Some(HumanPickupRange::SlideShelf)
+			|| last.robot.human_pickup_range == Some(HumanPickupRange::Both);
+		// If cone or both is selected, Cone is assumed to be pickupable
+		team.original_pickup_cone = last.robot.pickup_type == Some(PickupType::Cone)
+			|| last.robot.pickup_type == Some(PickupType::Both);
+		// If cube or both is selected, Cube is assumed to be pickupable
+		team.original_pickup_cube = last.robot.pickup_type == Some(PickupType::Cube)
+			|| last.robot.pickup_type == Some(PickupType::Both);
+		
 		// If anything other then None is selected, hybrid is assumed to be stackable
 		team.original_stack_hybrid = last.robot.stack_range == Some(StackRange::Hybrid)
 			|| last.robot.stack_range == Some(StackRange::Middle)
@@ -496,6 +549,11 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		team.average_auto_high_cone_score += match_info.auto.high_cone_scored as f32 * 6.0;
 		team.average_auto_high_cube_score += match_info.auto.high_cube_scored as f32 * 6.0;
 
+		team.average_auto_cones_picked_up += match_info.auto.cone_picked_up as f32;
+		team.average_auto_cubes_picked_up += match_info.auto.cube_picked_up as f32;
+		team.average_teleop_cones_picked_up += match_info.teleop.cone_picked_up as f32;
+		team.average_teleop_cubes_picked_up += match_info.teleop.cube_picked_up as f32;
+
 		let teleop_hybrid =
 			match_info.teleop.hybrid_scored as f32 * 2.0;
 		let teleop_middle =
@@ -541,6 +599,8 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		let match_count = (team_info.matches as f32).max(1.0);
 		team_info.average_auto_score /= match_count;
 		team_info.average_teleop_score /= match_count;
+		team_info.average_auto_cones_picked_up /= match_count;
+		team_info.average_auto_cubes_picked_up /= match_count;
 		team_info.average_auto_hybrid_score /= match_count;
 		team_info.average_auto_middle_score /= match_count;
 		team_info.average_auto_high_score /= match_count;
@@ -550,6 +610,8 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		team_info.average_auto_middle_cube_score /= match_count;
 		team_info.average_auto_high_cone_score /= match_count;
 		team_info.average_auto_high_cube_score /= match_count;
+		team_info.average_teleop_cones_picked_up /= match_count;
+		team_info.average_teleop_cubes_picked_up /= match_count;
 		team_info.average_teleop_hybrid_score /= match_count;
 		team_info.average_teleop_middle_score /= match_count;
 		team_info.average_teleop_high_score /= match_count;
@@ -649,6 +711,8 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 	for team_info in teams.values() {
 		average.average_auto_score += team_info.average_auto_score;
 		average.average_teleop_score += team_info.average_teleop_score;
+		average.average_auto_cones_picked_up += team_info.average_auto_cones_picked_up;
+		average.average_auto_cubes_picked_up += team_info.average_auto_cubes_picked_up;
 		average.average_cone_score += team_info.average_cone_score;
 		average.average_cube_score += team_info.average_cube_score;
 		average.average_auto_cone_score += team_info.average_auto_cone_score;
@@ -662,6 +726,8 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		average.average_auto_middle_cube_score += team_info.average_auto_middle_cube_score;
 		average.average_auto_high_cone_score += team_info.average_auto_high_cone_score;
 		average.average_auto_high_cube_score += team_info.average_auto_high_cube_score;
+		average.average_teleop_cones_picked_up += team_info.average_teleop_cones_picked_up;
+		average.average_teleop_cubes_picked_up += team_info.average_teleop_cubes_picked_up;
 		average.average_teleop_hybrid_score += team_info.average_teleop_hybrid_score;
 		average.average_teleop_middle_score += team_info.average_teleop_middle_score;
 		average.average_teleop_high_score += team_info.average_teleop_high_score;
@@ -693,6 +759,8 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		average.average_auto_score /= total_teams_f;
 		average.average_teleop_score /= total_teams_f;
 
+		average.average_auto_cones_picked_up /= total_teams_f;
+		average.average_auto_cubes_picked_up /= total_teams_f;
 		average.average_auto_cone_score /= total_teams_f;
 		average.average_auto_cube_score /= total_teams_f;
 		average.average_auto_high_cone_score /= total_teams_f;
@@ -709,6 +777,8 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		average.average_hybrid_score /= total_teams_f;
 		average.average_luck_score /= total_teams_f;
 		average.average_middle_score /= total_teams_f;
+		average.average_teleop_cones_picked_up /= total_teams_f;
+		average.average_teleop_cubes_picked_up /= total_teams_f;
 		average.average_teleop_cone_score /= total_teams_f;
 		average.average_teleop_cube_score /= total_teams_f;
 		average.average_teleop_high_cone_score /= total_teams_f;

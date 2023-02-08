@@ -46,7 +46,118 @@ impl Display for ChargeStation {
 		}
 	}
 }
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+#[serde(from = "u32")]
+#[serde(into = "u32")]
+pub enum PickupType {
+	None = 0,
+	Cone = 1,
+	Cube = 2,
+	Both = 3,
+}
 
+impl From<u32> for PickupType {
+	fn from(value: u32) -> Self {
+		match value {
+			0 => PickupType::None,
+			1 => PickupType::Cone,
+			2 => PickupType::Cube,
+			3 => PickupType::Both,
+			_ => panic!("Invalid Pickup Type: {}", value),
+		}
+	}
+}
+
+impl From<PickupType> for u32 {
+	fn from(value: PickupType) -> Self {
+		match value {
+			PickupType::None => 0,
+			PickupType::Cone => 1,
+			PickupType::Cube => 2,
+			PickupType::Both => 3,
+		}
+	}
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+#[serde(from = "u32")]
+#[serde(into = "u32")]
+pub enum FloorPickupRange {
+	None = 0,
+	Elsewhere = 1,
+	Hybrid = 2,
+	Both = 3,
+}
+
+impl Default for FloorPickupRange {
+	fn default() -> Self {
+		FloorPickupRange::None
+	}
+}
+
+impl From<u32> for FloorPickupRange {
+	fn from(value: u32) -> Self {
+		match value {
+			0 => FloorPickupRange::None,
+			1 => FloorPickupRange::Elsewhere,
+			2 => FloorPickupRange::Hybrid,
+			3 => FloorPickupRange::Both,
+			_ => panic!("Invalid Floor Pickup Range value: {}", value),
+		}
+	}
+}
+
+impl From<FloorPickupRange> for u32 {
+	fn from(value: FloorPickupRange) -> Self {
+		match value {
+			FloorPickupRange::None => 0,
+			FloorPickupRange::Elsewhere => 1,
+			FloorPickupRange::Hybrid => 2,
+			FloorPickupRange::Both => 3,
+		}
+	}
+}
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+#[serde(from = "u32")]
+#[serde(into = "u32")]
+pub enum HumanPickupRange {
+	None = 0,
+	Chute = 1,
+	SlideShelf = 2,
+	Both = 3,
+}
+
+impl Default for HumanPickupRange {
+	fn default() -> Self {
+		HumanPickupRange::None
+	}
+}
+
+impl From<u32> for HumanPickupRange {
+	fn from(value: u32) -> Self {
+		match value {
+			0 => HumanPickupRange::None,
+			1 => HumanPickupRange::Chute,
+			2 => HumanPickupRange::SlideShelf,
+			3 => HumanPickupRange::Both,
+			_ => panic!("Invalid Human Player Pickup Range value: {}", value),
+		}
+	}
+}
+
+impl From<HumanPickupRange> for u32 {
+	fn from(value: HumanPickupRange) -> Self {
+		match value {
+			HumanPickupRange::None => 0,
+			HumanPickupRange::Chute => 1,
+			HumanPickupRange::SlideShelf => 2,
+			HumanPickupRange::Both => 3,
+		}
+	}
+}
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[serde(from = "u32")]
@@ -161,6 +272,8 @@ impl From<DriveType> for u32 {
 pub struct Auto {
 	pub exited_tarmac: bool,
 	pub charge_station: ChargeStation,
+	pub cone_picked_up: u32,
+	pub cube_picked_up: u32,
 	pub hybrid_scored: u32,
 	pub middle_cube_scored: u32,
 	pub middle_cone_scored: u32,
@@ -172,6 +285,8 @@ pub struct Auto {
 #[serde(rename_all = "camelCase")]
 #[serde(default)]
 pub struct Teleop {
+	pub cone_picked_up: u32,
+	pub cube_picked_up: u32,
 	pub hybrid_scored: u32,
 	pub middle_cube_scored: u32,
 	pub middle_cone_scored: u32,
@@ -219,6 +334,9 @@ pub struct Pit {
 #[serde(rename_all = "camelCase")]
 #[serde(default)]
 pub struct Robot {
+	pub pickup_type: Option<PickupType>,
+	pub floor_pickup_range: Option<FloorPickupRange>,
+	pub human_pickup_range: Option<HumanPickupRange>,
 	pub stack_type: Option<StackType>,
 	pub stack_range: Option<StackRange>,
 	pub drive_type: Option<DriveType>,
@@ -265,12 +383,16 @@ impl MatchInfo {
 			
 			self.auto.exited_tarmac.to_string(),
 			self.auto.charge_station.to_string(),
+			self.auto.cone_picked_up.to_string(),
+			self.auto.cube_picked_up.to_string(),
 			self.auto.hybrid_scored.to_string(),
 			self.auto.middle_cube_scored.to_string(),
 			self.auto.middle_cone_scored.to_string(),
 			self.auto.high_cube_scored.to_string(),
 			self.auto.high_cone_scored.to_string(),
-
+			
+			self.teleop.cone_picked_up.to_string(),
+			self.teleop.cube_picked_up.to_string(),
 			self.teleop.hybrid_scored.to_string(),
 			self.teleop.middle_cube_scored.to_string(),
 			self.teleop.middle_cone_scored.to_string(),

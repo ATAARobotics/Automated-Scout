@@ -68,6 +68,27 @@ function TeamView(): React.ReactElement {
 					const teamInfo = teamInfos.result.find(
 						(team) => team.teamNumber === teamNumber
 					) as TeamInfo;
+					const pickupType = [
+						"None",
+						"Cone",
+						"Cube",
+						"Both",
+						"Unknown",
+					];
+					const floorPickupRange = [
+						"None",
+						"Elsewhere",
+						"Hybrid",
+						"Both",
+						"Unknown",
+					];
+					const humanPickupRange = [
+						"None",
+						"Chute",
+						"Slide Shelf",
+						"Both",
+						"Unknown",
+					];
 					const stackType = [
 						"None",
 						"Cone",
@@ -161,6 +182,30 @@ function TeamView(): React.ReactElement {
 												<KeyValueBox
 													label="Friendly"
 													value={visit.pit.friendly}
+												/>
+												<KeyValueBox
+													label="Pickup Type"
+													value={
+														pickupType[
+															visit.robot.pickupType ?? 4
+														]
+													}
+												/>
+												<KeyValueBox
+													label="Floor Pickup Range"
+													value={
+														floorPickupRange[
+															visit.robot.floorPickupRange ?? 4
+														]
+													}
+												/>
+												<KeyValueBox
+													label="Human Pickup Range"
+													value={
+														humanPickupRange[
+															visit.robot.humanPickupRange ?? 4
+														]
+													}
 												/>
 												<KeyValueBox
 													label="Stack Type"

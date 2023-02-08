@@ -1,4 +1,7 @@
 export type MatchType = "qualification" | "practice";
+export type PickupType = 0 | 1 | 2 | 3;
+export type FloorPickupRange = 0 | 1 | 2 | 3;
+export type HumanPickupRange = 0 | 1 | 2 | 3;
 export type StackType = 0 | 1 | 2 | 3;
 export type StackRange = 0 | 1 | 2 | 3 | 4;
 export type BusinessLevel = 0 | 1 | 2;
@@ -10,6 +13,8 @@ export interface TeamInfo {
 	teamRookieYear: number | null;
 	averageAutoScore: number;
 	averageTeleopScore: number;
+	averageAutoCubesPickedUp: number;
+	averageAutoConesPickedUp: number;
 	averageAutoHybridScore: number;
 	averageAutoMiddleScore: number;
 	averageAutoHighScore: number;
@@ -19,6 +24,8 @@ export interface TeamInfo {
 	averageAutoMiddleCubeScore: number;
 	averageAutoHighCubeScore: number;
 	averageAutoHighConeScore: number;
+	averageTeleopCubesPickedUp: number;
+	averageTeleopConesPickedUp: number;
 	averageTeleopHybridScore: number;
 	averageTeleopMiddleScore: number;
 	averageTeleopHighScore: number;
@@ -59,6 +66,12 @@ export interface TeamInfo {
 	claimedBalanceTime: number | null;
 	claimedEverybot: boolean;
 	claimedDriveType: DriveType | null;
+	claimedPickupCone: boolean;
+	claimedPickupCube: boolean;
+	claimedPickupElsewhere: boolean;
+	claimedPickupHybrid: boolean;
+	claimedPickupChute: boolean;
+	claimedPickupSlideShelf: boolean;
 	claimedStackCone: boolean;
 	claimedStackCube: boolean;
 	claimedStackHybrid: boolean;
@@ -67,6 +80,12 @@ export interface TeamInfo {
 	originalBalanceTime: number | null;
 	originalEverybot: boolean;
 	originalDriveType: DriveType | null;
+	originalPickupCone: boolean;
+	originalPickupCube: boolean;
+	originalPickupElsewhere: boolean;
+	originalPickupHybrid: boolean;
+	originalPickupChute: boolean;
+	originalPickupSlideShelf: boolean;
 	originalStackCone: boolean;
 	originalStackCube: boolean;
 	originalStackHybrid: boolean;
@@ -83,6 +102,8 @@ export interface MatchInfo {
 	auto: {
 		exitedTarmac: boolean;
 		chargeStation: "off" | "on" | "charged";
+		conePickedUp: number;
+		cubePickedUp: number;
 		hybridScored: number;
 		middleCubeScored: number;
 		middleConeScored: number;
@@ -90,6 +111,8 @@ export interface MatchInfo {
 		highConeScored: number;
 	};
 	teleop: {
+		conePickedUp: number;
+		cubePickedUp: number;
 		hybridScored: number;
 		middleCubeScored: number;
 		middleConeScored: number;
@@ -121,6 +144,9 @@ export interface RobotInfo {
 		comments: string;
 	};
 	robot: {
+		pickupType: PickupType | undefined;
+		floorPickupRange: FloorPickupRange | undefined;
+		humanPickupRange: HumanPickupRange | undefined;
 		stackType: StackType | undefined;
 		stackRange: StackRange | undefined;
 		driveType: DriveType | undefined;

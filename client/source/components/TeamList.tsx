@@ -14,12 +14,13 @@ import { Link } from "react-router-dom";
  * Fix park to be part of the charge station selection for teleop :( 
  * Rearrange buttons? 
  * Code readability :( 
+ * Track how many gamepieces picked up
  * 
- * Don't know how to do
+ * Don't know how to do:
  * Add match notes to team page
  * A way to check individual match data?
  * 
- * Do later
+ * Do later:
  * Create static versions that always run
  * Get info if someone on team balanced and whether to exclude auto balance information because of that
  * Get blue alliance data
