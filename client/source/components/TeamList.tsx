@@ -51,7 +51,7 @@ function getColour(
 	}
 }
 
-const order: [
+export const order: [
 	string,
 	(match: TeamInfo) => number,
 	(match: TeamInfo) => string,
