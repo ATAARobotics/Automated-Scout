@@ -4,7 +4,7 @@ import TitleIcon from "../components/TitleIcon";
 import { fetchState } from "../util";
 import { FullTeamInfo, MatchInfo, TeamInfo } from "../lib";
 import { useParams } from "react-router";
-
+// This is for the team specific page, contains pit scouting data mostly
 function KeyValueBox(props: {
 	label: string;
 	value: number | boolean | string | undefined;
@@ -26,7 +26,6 @@ function KeyValueBox(props: {
 		</div>
 	);
 }
-
 /**
  * Page not found page.
  *
@@ -58,6 +57,7 @@ function TeamView(): React.ReactElement {
 						</>
 					);
 				} else {
+					// ???
 					const ourData = fullTeamInfo.result.matches.flatMap((match) =>
 						match.blueTeams
 							.concat(match.redTeams)
@@ -69,22 +69,51 @@ function TeamView(): React.ReactElement {
 					const teamInfo = teamInfos.result.find(
 						(team) => team.teamNumber === teamNumber
 					) as TeamInfo;
-					const shooterCapabilities = [
+					// Making a construct of a few values, so that if the data is unknown it will show as unknown
+					const pickupType = [
 						"None",
-						"Low",
-						"High",
+						"Cone",
+						"Cube",
 						"Both",
 						"Unknown",
 					];
-					const shooterRanges = ["N/A", "Close", "Far", "Any", "Unknown"];
-					const climbHeights = [
+					const floorPickupRange = [
 						"None",
-						"Low",
-						"Mid",
-						"High",
-						"Traversal",
+						"Elsewhere",
+						"Hybrid",
+						"Both",
 						"Unknown",
 					];
+					const humanPickupRange = [
+						"None",
+						"Chute",
+						"Slide Shelf",
+						"Both",
+						"Unknown",
+					];
+					const stackType = [
+						"None",
+						"Cone",
+						"Cube",
+						"Both",
+						"Unknown",
+					];
+					const stackRange = [
+						"None",
+						"Hybrid",
+						"Mid",
+						"High",
+						"All",
+						"Unknown",
+					];
+					const driveTypes = [
+						"Swerve",
+						"Tank",
+						"Other",
+						"Unknown",
+					];
+					// Returns this info onto the site. Anything in here will be put on the site including comments!
+					// Match scouting comments currently don't display on the site for some reason
 					return (
 						<>
 							<h1>
@@ -121,7 +150,6 @@ function TeamView(): React.ReactElement {
 										return <span key={`pit-${i}`} />;
 									}
 								})}
-
 								{ourData.map((matchInfo, i) => {
 									if (matchInfo.notes.length > 0) {
 										return (
@@ -159,44 +187,60 @@ function TeamView(): React.ReactElement {
 													value={visit.pit.friendly}
 												/>
 												<KeyValueBox
-													label="Ball Capacity"
-													value={visit.robot.ballCapacity}
-												/>
-												<KeyValueBox
-													label="Autonomous Balls"
-													value={visit.robot.autoBallCount}
-												/>
-												<KeyValueBox
-													label="Shooter Goal"
+													label="Pickup Type"
 													value={
-														shooterCapabilities[
-															visit.robot.shooterCapability ?? 4
+														pickupType[
+															visit.robot.pickupType ?? 4
 														]
 													}
 												/>
 												<KeyValueBox
-													label="Shooter Range"
+													label="Floor Pickup Range"
 													value={
-														shooterRanges[
-															visit.robot.shooterRange ?? 4
+														floorPickupRange[
+															visit.robot.floorPickupRange ?? 4
 														]
 													}
 												/>
 												<KeyValueBox
-													label="Climb Max Height"
+													label="Human Pickup Range"
 													value={
-														climbHeights[
-															visit.robot.climbHeight ?? 5
+														humanPickupRange[
+															visit.robot.humanPickupRange ?? 4
 														]
 													}
 												/>
 												<KeyValueBox
-													label="Climb Time"
-													value={visit.robot.climbTime}
+													label="Stack Type"
+													value={
+														stackType[
+															visit.robot.stackType ?? 4
+														]
+													}
 												/>
 												<KeyValueBox
-													label="Climb using Everybot"
-													value={visit.robot.climbEverybot}
+													label="Stack Range"
+													value={
+														stackRange[
+															visit.robot.stackRange ?? 5
+														]
+													}
+												/>
+												<KeyValueBox
+													label="Balance Time"
+													value={visit.robot.balanceTime}
+												/>
+												<KeyValueBox
+													label="Everybot"
+													value={visit.robot.everybot}
+												/>
+												<KeyValueBox
+													label="Drive"
+													value={
+														driveTypes[
+															visit.robot.driveType ?? 3
+														]
+													}
 												/>
 											</div>
 										</div>

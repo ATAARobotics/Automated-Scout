@@ -5,6 +5,24 @@ import { TeamInfo } from "../lib";
 import { formatPercent, formatRatio, formatProbList } from "../util";
 import { Link } from "react-router-dom";
 
+// This file displays the information on the main page.
+
+/**
+ * To Do List:
+ * Know how to do:
+ * Figure out what key information we want to display on automated scout
+ * Automated Scout visual update?
+ * 
+ * Don't know how to do:
+ * Add match notes to team page
+ * A way to check individual match data?
+ * 
+ * Do later:
+ * Create static versions that always run
+ * Get info if someone on team balanced and whether to exclude auto balance information because of that
+ * Get blue alliance data
+ */
+
 /**
  * Get a color for a team's score relative to the average score.
  *
@@ -33,13 +51,37 @@ function getColour(
 	}
 }
 
-const order: [
-	string,
-	(match: TeamInfo) => number,
-	(match: TeamInfo) => string,
-	number,
-	"left" | "right" | false,
-	number | false
+const calculateConeAccuracy = (match: TeamInfo) => {
+	const lowAutoConeScore = match.averageAutoConeScore-(match.averageAutoHighConeScore + match.averageAutoMiddleConeScore);
+	const lowTeleopConeScore = match.averageTeleopConeScore-(match.averageTeleopHighConeScore + match.averageTeleopMiddleConeScore);
+	const score = match.averageAutoHighConeScore / 6 +
+		match.averageTeleopHighConeScore / 5 +
+		match.averageAutoMiddleConeScore / 4 +
+		match.averageTeleopMiddleConeScore / 3 +
+		match.averageAutoHybridScore / 2 / 3 +
+		match.averageTeleopHybridScore / 2 / 3;
+	return (match.averageAutoConesPickedUp + match.averageTeleopConesPickedUp) / score
+};
+
+const calculateCubeAccuracy = (match: TeamInfo) => {
+	// const lowAutoCubeScore = match.averageAutoCubeScore-(match.averageAutoHighCubeScore + match.averageAutoMiddleCubeScore);
+	// const lowTeleopCubeScore = match.averageTeleopCubeScore-(match.averageTeleopHighCubeScore + match.averageTeleopMiddleCubeScore);
+	const score = match.averageAutoHighCubeScore / 6 +
+		match.averageTeleopHighCubeScore / 5 +
+		match.averageAutoMiddleCubeScore / 4 +
+		match.averageTeleopMiddleCubeScore / 3 +
+		match.averageAutoHybridScore / 2 / 3 +
+		match.averageTeleopHybridScore / 2 / 3;
+	return (match.averageAutoCubesPickedUp + match.averageTeleopCubesPickedUp) / score
+};
+
+export const order: [
+	string, // Title
+	(match: TeamInfo) => number, // Sort Value
+	(match: TeamInfo) => string, // Display Value
+	number, // Width
+	"left" | "right" | false, // Pin to side
+	number | false // colouration multiplier
 ][] = [
 	[
 		"Team",
@@ -60,88 +102,42 @@ const order: [
 		5.0,
 	],
 	[
-		"Tele Acc",
-		(match: TeamInfo) =>
-			match.averageAutoHighGoalAccuracy + match.averageAutoLowGoalAccuracy,
-		(match: TeamInfo) =>
-			formatPercent(match.averageAutoHighGoalAccuracy) +
-			"H, " +
-			formatPercent(match.averageAutoLowGoalAccuracy) +
-			"L",
-		1,
-		false,
-		5.0,
-	],
-	[
-		"Auto H:L",
-		(match: TeamInfo) =>
-			match.averageAutoHighGoals / match.averageAutoLowGoals,
-		(match: TeamInfo) =>
-			formatRatio(match.averageAutoHighGoals, match.averageAutoLowGoals),
-		1,
-		false,
-		5.0,
-	],
-	[
 		"Tele Sc.",
-		(match: TeamInfo) =>
-			match.averageAutoHighGoals / match.averageAutoLowGoals,
+		(match: TeamInfo) => match.averageTeleopScore,
 		(match: TeamInfo) => match.averageTeleopScore.toFixed(1),
 		0.75,
 		false,
 		5.0,
 	],
 	[
-		"Tele Acc",
-		(match: TeamInfo) =>
-			match.averageTeleopHighGoalAccuracy +
-			match.averageTeleopLowGoalAccuracy,
-		(match: TeamInfo) =>
-			formatPercent(match.averageTeleopHighGoalAccuracy) +
-			"H, " +
-			formatPercent(match.averageTeleopLowGoalAccuracy) +
-			"L",
-		1,
+		"Cone:Cube Ratio",
+		(match: TeamInfo) => match.averageConeScore/match.averageCubeScore,
+		(match: TeamInfo) => formatRatio(match.averageConeScore, match.averageCubeScore),
+		0.75,
 		false,
-		5.0,
+		false,
 	],
 	[
-		"Tele H:L",
-		(match: TeamInfo) =>
-			match.averageTeleopHighGoals / match.averageTeleopLowGoals,
-		(match: TeamInfo) =>
-			formatRatio(match.averageTeleopHighGoals, match.averageTeleopLowGoals),
-		1,
-		false,
-		5.0,
-	],
-	[
-		"Climb Sc.",
-		(match: TeamInfo) => match.averageClimbScore,
-		(match: TeamInfo) => match.averageClimbScore.toFixed(1),
+		"Avg. High",
+		(match: TeamInfo) => match.averageAutoHighScore/6 + match.averageTeleopHighScore/5,
+		(match: TeamInfo) => (match.averageAutoHighScore/6 + match.averageTeleopHighScore/5).toFixed(1),
 		0.75,
 		false,
 		5.0,
 	],
 	[
-		"Climb Acc",
-		(match: TeamInfo) => 1.0 - match.climbFailRate,
-		(match: TeamInfo) =>
-			formatPercent(1.0 - match.climbFailRate) +
-			" (" +
-			match.climbAttemptCounts
-				.map((n) => ((n[1] / n[0]) * 100.0).toFixed(0) + "%")
-				.join(", ") +
-			")",
-		3,
+		"Avg. Med",
+		(match: TeamInfo) => match.averageAutoHighScore/4 + match.averageTeleopHighScore/3,
+		(match: TeamInfo) => (match.averageAutoHighScore/4 + match.averageTeleopHighScore/3).toFixed(1),
+		0.75,
 		false,
 		5.0,
 	],
 	[
-		"Climb Erly.",
-		(match: TeamInfo) => match.climbBeforeEndgameRate,
-		(match: TeamInfo) => formatPercent(match.climbBeforeEndgameRate),
-		1,
+		"Avg. Low",
+		(match: TeamInfo) => match.averageAutoHighScore/3 + match.averageTeleopHighScore/2,
+		(match: TeamInfo) => (match.averageAutoHighScore/3 + match.averageTeleopHighScore/2).toFixed(1),
+		0.75,
 		false,
 		5.0,
 	],
@@ -164,7 +160,7 @@ const order: [
 	[
 		"Speed",
 		(match: TeamInfo) => match.overallSpeed,
-		(match: TeamInfo) => match.overallSpeed.toFixed(1) + " / 5",
+		(match: TeamInfo) => match.overallSpeed.toFixed(1) + " / 5.0",
 		1,
 		false,
 		5.0,
@@ -172,7 +168,7 @@ const order: [
 	[
 		"Stability",
 		(match: TeamInfo) => match.overallStability,
-		(match: TeamInfo) => match.overallStability.toFixed(1) + " / 5",
+		(match: TeamInfo) => match.overallStability.toFixed(1) + " / 5.0",
 		1,
 		false,
 		5.0,
@@ -180,7 +176,7 @@ const order: [
 	[
 		"Defence",
 		(match: TeamInfo) => match.overallDefence,
-		(match: TeamInfo) => match.overallDefence.toFixed(1) + " / 5",
+		(match: TeamInfo) => match.overallDefence.toFixed(1) + " / 5.0",
 		1,
 		false,
 		5.0,
@@ -202,60 +198,32 @@ const order: [
 		-5.0,
 	],
 	[
-		"Start Loc.",
+		"Auto Charge",
 		(match: TeamInfo) =>
-			match.startLeftRate * 3 +
-			match.startMiddleRate * 2 +
-			match.startRightRate,
+			match.chargeStationAutoOff * 3 +
+			match.chargeStationAutoOn * 2 +
+			match.chargeStationAutoCharged,
 		(match: TeamInfo) =>
 			formatProbList(
-				["Left", "Mid", "Right"],
-				[match.startLeftRate, match.startMiddleRate, match.startRightRate]
+				["Off", "On", "Charged"],
+				[match.chargeStationAutoOff, match.chargeStationAutoOn, match.chargeStationAutoCharged]
 			),
 		1,
 		false,
 		false,
 	],
 	[
-		"Shoot Loc.",
-		(match: TeamInfo) => match.shootHubRate - match.shootFarRate,
+		"Teleop Charge",
+		(match: TeamInfo) =>
+			match.chargeStationTeleopOff * 4 +
+			match.chargeStationTeleopParked * 3+
+			match.chargeStationTeleopOn * 2 +
+			match.chargeStationTeleopCharged,
 		(match: TeamInfo) =>
 			formatProbList(
-				["Hub", "Far"],
-				[match.shootHubRate, match.shootFarRate]
+				["Off", "Parked", "On", "Charged"],
+				[match.chargeStationTeleopOff, match.chargeStationTeleopParked, match.chargeStationTeleopOn, match.chargeStationTeleopCharged]
 			),
-		1,
-		false,
-		false,
-	],
-	[
-		"Friendly",
-		(match: TeamInfo) => (match.friendly ? 1.0 : 0.0),
-		(match: TeamInfo) => (match.friendly ? "Yes" : "No"),
-		1,
-		false,
-		0.01,
-	],
-	[
-		"Pit Peopl.",
-		(match: TeamInfo) => match.averagePeopleInPit,
-		(match: TeamInfo) => match.averagePeopleInPit.toFixed(0),
-		1,
-		false,
-		false,
-	],
-	[
-		"Pit Busy",
-		(match: TeamInfo) => match.averagePitBusiness,
-		(match: TeamInfo) => match.averagePitBusiness.toFixed(2),
-		1,
-		false,
-		false,
-	],
-	[
-		"Pit Chaos",
-		(match: TeamInfo) => match.averagePitChaos,
-		(match: TeamInfo) => match.averagePitChaos.toFixed(2),
 		1,
 		false,
 		false,
@@ -267,6 +235,22 @@ const order: [
 		0.75,
 		false,
 		false,
+	],
+	[
+		"Cone Accuracy (ignore it's bad)",
+		calculateConeAccuracy,
+		(match: TeamInfo) => formatPercent(calculateConeAccuracy(match)),
+		0.75,
+		false,
+		10.0,
+	],
+	[
+		"Cube Accuracy (ignore it's bad)",
+		calculateCubeAccuracy,
+		(match: TeamInfo) => formatPercent(calculateCubeAccuracy(match)),
+		0.75,
+		false,
+		10.0,
 	],
 	[
 		"W:L",
@@ -288,13 +272,11 @@ const order: [
 		"Avg. Sc.",
 		(match: TeamInfo) =>
 			match.averageAutoScore +
-			match.averageTeleopScore +
-			match.averageClimbScore,
+			match.averageTeleopScore,
 		(match: TeamInfo) =>
 			(
 				match.averageAutoScore +
-				match.averageTeleopScore +
-				match.averageClimbScore
+				match.averageTeleopScore
 			).toFixed(1),
 		1,
 		"right",

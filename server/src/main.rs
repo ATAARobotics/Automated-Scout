@@ -2,6 +2,7 @@ mod analysis;
 mod config;
 mod data;
 mod database;
+mod match_info;
 mod server_sync;
 mod team_info;
 
@@ -100,6 +101,37 @@ async fn get_team_info(
 		.body(serde_json::to_string(&json!({"success": true, "data": team})).unwrap())
 }
 
+#[derive(Debug, Deserialize)]
+struct MatchInfoQueryParams {
+	#[serde(rename = "match")]
+	match_number: u32,
+}
+
+#[get("/api/match_info")]
+async fn get_match_info(
+	data: Data<Arc<Database>>,
+	params: web::Query<MatchInfoQueryParams>,
+) -> HttpResponse {
+	if let Some(full_match_info) = match_info::get_match_info(&data, params.match_number) {
+		HttpResponse::build(StatusCode::OK)
+			.content_type(ContentType::json())
+			.append_header((header::ACCESS_CONTROL_ALLOW_ORIGIN, "*"))
+			.body(
+				serde_json::to_string(&json!({"success": true, "data": full_match_info})).unwrap(),
+			)
+	} else {
+		HttpResponse::build(StatusCode::OK)
+			.content_type(ContentType::json())
+			.append_header((header::ACCESS_CONTROL_ALLOW_ORIGIN, "*"))
+			.body(
+				serde_json::to_string(
+					&json!({"success": false, "error": "Not a valid match owo."}),
+				)
+				.unwrap(),
+			)
+	}
+}
+
 #[get("/api/csv")]
 async fn get_csv(data: Data<Arc<Database>>) -> HttpResponse {
 	let mut csv = MatchInfo::HEADER.to_string();
@@ -176,6 +208,7 @@ async fn main() {
 			.service(get_analysis)
 			.service(get_img)
 			.service(get_team_info)
+			.service(get_match_info)
 			.service(Files::new("/dist", "../client/dist/").prefer_utf8(true))
 			.service(
 				Files::new("/", "../client/assets/")

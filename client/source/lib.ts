@@ -1,45 +1,56 @@
+// Exporting Pit Scouting values types, to clarify which values are recieved by Scouty McScout in the database file
 export type MatchType = "qualification" | "practice";
-export type ClimbLevel = 0 | 1 | 2 | 3 | 4;
-export type ShooterPositions = 0 | 1 | 2 | 3;
+export type PickupType = 0 | 1 | 2 | 3;
+export type FloorPickupRange = 0 | 1 | 2 | 3;
+export type HumanPickupRange = 0 | 1 | 2 | 3;
+export type StackType = 0 | 1 | 2 | 3;
+export type StackRange = 0 | 1 | 2 | 3 | 4;
 export type BusinessLevel = 0 | 1 | 2;
-export type BallCapacity = 0 | 1 | 2;
-export type ShooterCapability = 0 | 1 | 2 | 3;
 export type DriveType = 0 | 1 | 2;
 
+// Exporting TeamInfo, these are the same as the variables in analysis
 export interface TeamInfo {
 	teamNumber: number;
 	teamName: string | null;
 	teamRookieYear: number | null;
 	averageAutoScore: number;
 	averageTeleopScore: number;
-	averageClimbScore: number;
-	averageAutoBallEfficiency: number;
-	averageAutoHighGoalAccuracy: number;
-	averageAutoLowGoalAccuracy: number;
-	averageAutoHighGoals: number;
-	averageAutoLowGoals: number;
-	averageTeleopBallEfficiency: number;
-	averageTeleopHighGoalAccuracy: number;
-	averageTeleopLowGoalAccuracy: number;
-	averageTeleopHighGoals: number;
-	averageTeleopLowGoals: number;
+	averageAutoCubesPickedUp: number;
+	averageAutoConesPickedUp: number;
+	averageAutoHybridScore: number;
+	averageAutoMiddleScore: number;
+	averageAutoHighScore: number;
+	averageAutoConeScore: number;
+	averageAutoCubeScore: number;
+	averageAutoMiddleConeScore: number;
+	averageAutoMiddleCubeScore: number;
+	averageAutoHighCubeScore: number;
+	averageAutoHighConeScore: number;
+	averageTeleopCubesPickedUp: number;
+	averageTeleopConesPickedUp: number;
+	averageTeleopHybridScore: number;
+	averageTeleopMiddleScore: number;
+	averageTeleopHighScore: number;
+	averageTeleopConeScore: number;
+	averageTeleopCubeScore: number;
+	averageTeleopMiddleCubeScore: number;
+	averageTeleopMiddleConeScore: number;
+	averageTeleopHighCubeScore: number;
+	averageTeleopHighConeScore: number;
 	averageDefenceScore: number;
 	averageLuckScore: number;
-	climbFailRate: number;
-	climbPartialSuccessRate: number;
-	climbCompleteSuccessRate: number;
-	climbAttemptCounts: [
-		[number, number],
-		[number, number],
-		[number, number],
-		[number, number]
-	];
-	climbBeforeEndgameRate: number;
-	shootHubRate: number;
-	shootFarRate: number;
-	startLeftRate: number;
-	startMiddleRate: number;
-	startRightRate: number;
+	averageConeScore: number;
+	averageCubeScore: number;
+	averageHybridScore: number;
+	averageMiddleScore: number;
+	averageHighScore: number;
+	chargeStationAutoOff: number;
+	chargeStationAutoOn: number;
+	chargeStationAutoCharged: number;
+	chargeStationTeleopOff: number;
+	chargeStationTeleopParked: number;
+	chargeStationTeleopOn: number;
+	chargeStationTeleopCharged: number;
 	opr: number;
 	dpr: number;
 	winCount: number;
@@ -48,70 +59,83 @@ export interface TeamInfo {
 	overallStability: number;
 	overallDefence: number;
 	rankingPoints: number;
+	// Pit Scouting
 	averagePeopleInPit: number;
 	averagePitBusiness: number;
 	averagePitChaos: number;
 	friendly: boolean;
 	claimedAutoBallCount: number | null;
 	claimedBallCapacity: number | null;
-	claimedClimbTime: number | null;
-	claimedClimbEverybot: boolean;
+	claimedBalanceTime: number | null;
+	claimedEverybot: boolean;
 	claimedDriveType: DriveType | null;
-	claimedShooterLow: boolean;
-	claimedShooterHigh: boolean;
-	claimedShooterHub: boolean;
-	claimedShooterFar: boolean;
-	originalAutoBallCount: number | null;
-	originalBallCapacity: number | null;
-	originalClimbTime: number | null;
-	originalClimbEverybot: boolean;
+	claimedPickupCone: boolean;
+	claimedPickupCube: boolean;
+	claimedPickupElsewhere: boolean;
+	claimedPickupHybrid: boolean;
+	claimedPickupChute: boolean;
+	claimedPickupSlideShelf: boolean;
+	claimedStackCone: boolean;
+	claimedStackCube: boolean;
+	claimedStackHybrid: boolean;
+	claimedStackMiddle: boolean;
+	claimedStackHigh: boolean;
+	originalBalanceTime: number | null;
+	originalEverybot: boolean;
 	originalDriveType: DriveType | null;
-	originalShooterLow: boolean;
-	originalShooterHigh: boolean;
-	originalShooterHub: boolean;
-	originalShooterFar: boolean;
+	originalPickupCone: boolean;
+	originalPickupCube: boolean;
+	originalPickupElsewhere: boolean;
+	originalPickupHybrid: boolean;
+	originalPickupChute: boolean;
+	originalPickupSlideShelf: boolean;
+	originalStackCone: boolean;
+	originalStackCube: boolean;
+	originalStackHybrid: boolean;
+	originalStackMiddle: boolean;
+	originalStackHigh: boolean;
 	matches: number;
 }
 
+// Exporting match info, make sure it matches up with the database file in scouty mcscout
 export interface MatchInfo {
 	type: "match_info";
 	match: number;
 	matchCategory: MatchType;
 	team: number;
 	auto: {
-		preloadedCargo: boolean;
 		exitedTarmac: boolean;
-		startingLocation: "left" | "middle" | "right";
-		cellsAcquired: number;
-		lowGoalAttempts: number;
-		lowGoalShots: number;
-		highGoalAttempts: number;
-		highGoalShots: number;
+		autoChargeStation: "off" | "on" | "charged";
+		conePickedUp: number;
+		cubePickedUp: number;
+		hybridScored: number;
+		middleCubeScored: number;
+		middleConeScored: number;
+		highCubeScored: number;
+		highConeScored: number;
 	};
 	teleop: {
-		cellsAcquired: number;
-		lowGoalAttempts: number;
-		lowGoalShots: number;
-		highGoalAttempts: number;
-		highGoalShots: number;
+		conePickedUp: number;
+		cubePickedUp: number;
+		hybridScored: number;
+		middleCubeScored: number;
+		middleConeScored: number;
+		highCubeScored: number;
+		highConeScored: number;
+		teleopChargeStation: "off" | "parked" | "on" | "charged";
 	};
-	climb: {
-		startedBeforeEndgame: boolean;
-		highestAttempted: ClimbLevel;
-		highestScored: ClimbLevel;
-		fell: boolean;
-	};
+	
 	speed: number;
 	stability: number;
 	defence: number | undefined;
 	isPrimaryDefence: boolean;
-	shooterPositions: ShooterPositions;
 	wasBroken: boolean;
 	wasDisabled: boolean;
 	notes: string;
 	lastModifiedTime: number;
 }
 
+// Exporting pit scouting info, make sure it matches up with the database file in scouty mcscout
 export interface RobotInfo {
 	type: "robot_info";
 	scoutingTime: number;
@@ -124,20 +148,21 @@ export interface RobotInfo {
 		comments: string;
 	};
 	robot: {
-		autoBallCount: number | undefined;
-		ballCapacity: BallCapacity | undefined;
-		climbTime: number | undefined;
-		climbHeight: ClimbLevel | undefined;
-		climbEverybot: boolean | undefined;
-		shooterCapability: ShooterCapability | undefined;
-		shooterRange: ShooterPositions | undefined;
+		pickupType: PickupType | undefined;
+		floorPickupRange: FloorPickupRange | undefined;
+		humanPickupRange: HumanPickupRange | undefined;
+		stackType: StackType | undefined;
+		stackRange: StackRange | undefined;
 		driveType: DriveType | undefined;
+		balanceTime: number | undefined;
+		everybot: boolean | undefined;
 		comments: string;
 	};
 	images: string[];
 	lastModifiedTime: number;
 }
 
+// Exporting team info, taken from TBA
 export interface FullTeamInfo {
 	teamNumber: number;
 	matches: {
