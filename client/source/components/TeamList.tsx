@@ -51,13 +51,37 @@ function getColour(
 	}
 }
 
+const calculateConeAccuracy = (match: TeamInfo) => {
+	const lowAutoConeScore = match.averageAutoConeScore-(match.averageAutoHighConeScore + match.averageAutoMiddleConeScore);
+	const lowTeleopConeScore = match.averageTeleopConeScore-(match.averageTeleopHighConeScore + match.averageTeleopMiddleConeScore);
+	const score = match.averageAutoHighConeScore / 6 +
+		match.averageTeleopHighConeScore / 5 +
+		match.averageAutoMiddleConeScore / 4 +
+		match.averageTeleopMiddleConeScore / 3 +
+		match.averageAutoHybridScore / 2 / 3 +
+		match.averageTeleopHybridScore / 2 / 3;
+	return (match.averageAutoConesPickedUp + match.averageTeleopConesPickedUp) / score
+};
+
+const calculateCubeAccuracy = (match: TeamInfo) => {
+	// const lowAutoCubeScore = match.averageAutoCubeScore-(match.averageAutoHighCubeScore + match.averageAutoMiddleCubeScore);
+	// const lowTeleopCubeScore = match.averageTeleopCubeScore-(match.averageTeleopHighCubeScore + match.averageTeleopMiddleCubeScore);
+	const score = match.averageAutoHighCubeScore / 6 +
+		match.averageTeleopHighCubeScore / 5 +
+		match.averageAutoMiddleCubeScore / 4 +
+		match.averageTeleopMiddleCubeScore / 3 +
+		match.averageAutoHybridScore / 2 / 3 +
+		match.averageTeleopHybridScore / 2 / 3;
+	return (match.averageAutoCubesPickedUp + match.averageTeleopCubesPickedUp) / score
+};
+
 export const order: [
-	string,
-	(match: TeamInfo) => number,
-	(match: TeamInfo) => string,
-	number,
-	"left" | "right" | false,
-	number | false
+	string, // Title
+	(match: TeamInfo) => number, // Sort Value
+	(match: TeamInfo) => string, // Display Value
+	number, // Width
+	"left" | "right" | false, // Pin to side
+	number | false // colouration multiplier
 ][] = [
 	[
 		"Team",
@@ -81,6 +105,38 @@ export const order: [
 		"Tele Sc.",
 		(match: TeamInfo) => match.averageTeleopScore,
 		(match: TeamInfo) => match.averageTeleopScore.toFixed(1),
+		0.75,
+		false,
+		5.0,
+	],
+	[
+		"Cone:Cube Ratio",
+		(match: TeamInfo) => match.averageConeScore/match.averageCubeScore,
+		(match: TeamInfo) => formatRatio(match.averageConeScore, match.averageCubeScore),
+		0.75,
+		false,
+		false,
+	],
+	[
+		"Avg. High",
+		(match: TeamInfo) => match.averageAutoHighScore/6 + match.averageTeleopHighScore/5,
+		(match: TeamInfo) => (match.averageAutoHighScore/6 + match.averageTeleopHighScore/5).toFixed(1),
+		0.75,
+		false,
+		5.0,
+	],
+	[
+		"Avg. Med",
+		(match: TeamInfo) => match.averageAutoHighScore/4 + match.averageTeleopHighScore/3,
+		(match: TeamInfo) => (match.averageAutoHighScore/4 + match.averageTeleopHighScore/3).toFixed(1),
+		0.75,
+		false,
+		5.0,
+	],
+	[
+		"Avg. Low",
+		(match: TeamInfo) => match.averageAutoHighScore/3 + match.averageTeleopHighScore/2,
+		(match: TeamInfo) => (match.averageAutoHighScore/3 + match.averageTeleopHighScore/2).toFixed(1),
 		0.75,
 		false,
 		5.0,
@@ -179,6 +235,22 @@ export const order: [
 		0.75,
 		false,
 		false,
+	],
+	[
+		"Cone Accuracy (ignore it's bad)",
+		calculateConeAccuracy,
+		(match: TeamInfo) => formatPercent(calculateConeAccuracy(match)),
+		0.75,
+		false,
+		10.0,
+	],
+	[
+		"Cube Accuracy (ignore it's bad)",
+		calculateCubeAccuracy,
+		(match: TeamInfo) => formatPercent(calculateCubeAccuracy(match)),
+		0.75,
+		false,
+		10.0,
 	],
 	[
 		"W:L",
