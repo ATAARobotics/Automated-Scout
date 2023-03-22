@@ -10,16 +10,15 @@ import { Link } from "react-router-dom";
 /**
  * To Do List:
  * Know how to do:
- * Figure out what key information we want to display on automated scout
  * Automated Scout visual update?
+ * Edit pit scouting questions
+ * Fix Pit Scouting Checklist
  * 
- * Don't know how to do:
- * Add match notes to team page
+ * Don't know how to do: 
  * A way to check individual match data?
  * 
- * Do later:
+ * Make sure is done before comp:
  * Create static versions that always run
- * Get info if someone on team balanced and whether to exclude auto balance information because of that
  * Get blue alliance data
  */
 
@@ -51,16 +50,16 @@ function getColour(
 	}
 }
 
-const calculateConeAccuracy = (match: TeamInfo) => {
-	const lowAutoConeScore = match.averageAutoConeScore-(match.averageAutoHighConeScore + match.averageAutoMiddleConeScore);
-	const lowTeleopConeScore = match.averageTeleopConeScore-(match.averageTeleopHighConeScore + match.averageTeleopMiddleConeScore);
+/*const calculateConeAccuracy = (match: TeamInfo) => {
+	//const lowAutoConeScore = match.averageAutoConeScore-(match.averageAutoHighConeScore + match.averageAutoMiddleConeScore);
+	//const lowTeleopConeScore = match.averageTeleopConeScore-(match.averageTeleopHighConeScore + match.averageTeleopMiddleConeScore);
 	const score = match.averageAutoHighConeScore / 6 +
 		match.averageTeleopHighConeScore / 5 +
 		match.averageAutoMiddleConeScore / 4 +
 		match.averageTeleopMiddleConeScore / 3 +
 		match.averageAutoHybridScore / 2 / 3 +
 		match.averageTeleopHybridScore / 2 / 3;
-	return (match.averageAutoConesPickedUp + match.averageTeleopConesPickedUp) / score
+	return score / (match.averageAutoConesPickedUp + match.averageTeleopConesPickedUp) 
 };
 
 const calculateCubeAccuracy = (match: TeamInfo) => {
@@ -72,8 +71,8 @@ const calculateCubeAccuracy = (match: TeamInfo) => {
 		match.averageTeleopMiddleCubeScore / 3 +
 		match.averageAutoHybridScore / 2 / 3 +
 		match.averageTeleopHybridScore / 2 / 3;
-	return (match.averageAutoCubesPickedUp + match.averageTeleopCubesPickedUp) / score
-};
+	return score / (match.averageAutoCubesPickedUp + match.averageTeleopCubesPickedUp)
+};*/
 
 export const order: [
 	string, // Title
@@ -141,7 +140,7 @@ export const order: [
 		false,
 		5.0,
 	],
-	[
+	/*[
 		"Defence Sc.",
 		(match: TeamInfo) => match.averageDefenceScore,
 		(match: TeamInfo) => match.averageDefenceScore.toFixed(1),
@@ -156,7 +155,7 @@ export const order: [
 		0.75,
 		false,
 		-1.0,
-	],
+	],*/
 	[
 		"Speed",
 		(match: TeamInfo) => match.overallSpeed,
@@ -236,7 +235,7 @@ export const order: [
 		false,
 		false,
 	],
-	[
+	/*[
 		"Cone Accuracy (ignore it's bad)",
 		calculateConeAccuracy,
 		(match: TeamInfo) => formatPercent(calculateConeAccuracy(match)),
@@ -251,7 +250,7 @@ export const order: [
 		0.75,
 		false,
 		10.0,
-	],
+	],*/
 	[
 		"W:L",
 		(match: TeamInfo) => match.winCount / match.lossCount,

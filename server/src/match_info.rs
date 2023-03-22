@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use serde::Serialize;
 
 use crate::analysis::RawMatchData;
-use crate::data::{MatchType, RobotInfo};
+use crate::data::{MatchType};
 use crate::{Database, MatchInfo};
 
 #[derive(Debug, Serialize)]

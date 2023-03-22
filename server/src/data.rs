@@ -30,6 +30,7 @@ pub enum AutoChargeStation {
 	Off,
 	On,
 	Charged,
+	OtherRobot,
 }
 
 impl Default for AutoChargeStation {
@@ -44,6 +45,7 @@ impl Display for AutoChargeStation {
 			AutoChargeStation::Off => write!(f, "Off"),
 			AutoChargeStation::On => write!(f, "On"),
 			AutoChargeStation::Charged => write!(f, "Charged"),
+			AutoChargeStation::OtherRobot => write!(f, "OtherRobot")
 		}
 	}
 }
@@ -303,9 +305,10 @@ impl From<DriveType> for u32 {
 pub struct Auto {
 	pub exited_tarmac: bool,
 	pub auto_charge_station: AutoChargeStation,
-	pub cone_picked_up: u32,
-	pub cube_picked_up: u32,
-	pub hybrid_scored: u32,
+	//pub cone_picked_up: u32,
+	//pub cube_picked_up: u32,
+	pub hybrid_cube_scored: u32,
+	pub hybrid_cone_scored: u32,
 	pub middle_cube_scored: u32,
 	pub middle_cone_scored: u32,
 	pub high_cube_scored: u32,
@@ -316,9 +319,10 @@ pub struct Auto {
 #[serde(rename_all = "camelCase")]
 #[serde(default)]
 pub struct Teleop {
-	pub cone_picked_up: u32,
-	pub cube_picked_up: u32,
-	pub hybrid_scored: u32,
+	//pub cone_picked_up: u32,
+	//pub cube_picked_up: u32,
+	pub hybrid_cube_scored: u32,
+	pub hybrid_cone_scored: u32,
 	pub middle_cube_scored: u32,
 	pub middle_cone_scored: u32,
 	pub high_cube_scored: u32,
@@ -410,8 +414,8 @@ impl Default for Info {
 
 // Convert match info to string
 impl MatchInfo {
-	// Don't know what header does, has old data, look at later
-	pub const HEADER: &'static str = "match_number,match_category,team,auto_exited_tarmac,auto_starting_location,auto_cells_acquired,auto_low_goal_attempts,auto_low_goal_shots,auto_high_goal_attempts,auto_high_goal_shots,teleop_cells_acquired,teleop_low_goal_attempts,teleop_low_goal_shots,teleop_high_goal_attempts,teleop_high_goal_shots,highest_climb_attempted,highest_climb_scored,fell,speed,stability,defence,is_primary_defence,was_broken,was_disabled,notes\n";
+	// Arden match data export
+	pub const HEADER: &'static str = "match_number,match_category,team,auto_exited_tarmac,auto_charge_station,auto_hybrid_cube_scored,auto_hybrid_cone_scored,auto_middle_cube_scored,auto_middle_cone_scored,auto_high_cube_scored,auto_high_cone_scored,teleop_hybrid_cube_scored,teleop_hybrid_cone_scored,teleop_middle_cube_scored,teleop_middle_cone_scored,teleop_high_cube_scored,teleop_high_cone_scored,speed,stability,defence,is_primary_defence,was_broken,was_disabled,notes\n";
 	pub fn write_csv_line(&self) -> String {
 		vec![
 			self.match_number.to_string(),
@@ -420,17 +424,19 @@ impl MatchInfo {
 			
 			self.auto.exited_tarmac.to_string(),
 			self.auto.auto_charge_station.to_string(),
-			self.auto.cone_picked_up.to_string(),
-			self.auto.cube_picked_up.to_string(),
-			self.auto.hybrid_scored.to_string(),
+			//self.auto.cone_picked_up.to_string(),
+			//self.auto.cube_picked_up.to_string(),
+			self.auto.hybrid_cube_scored.to_string(),
+			self.auto.hybrid_cone_scored.to_string(),
 			self.auto.middle_cube_scored.to_string(),
 			self.auto.middle_cone_scored.to_string(),
 			self.auto.high_cube_scored.to_string(),
 			self.auto.high_cone_scored.to_string(),
 			
-			self.teleop.cone_picked_up.to_string(),
-			self.teleop.cube_picked_up.to_string(),
-			self.teleop.hybrid_scored.to_string(),
+			//self.teleop.cone_picked_up.to_string(),
+			//self.teleop.cube_picked_up.to_string(),
+			self.teleop.hybrid_cube_scored.to_string(),
+			self.teleop.hybrid_cone_scored.to_string(),
 			self.teleop.middle_cube_scored.to_string(),
 			self.teleop.middle_cone_scored.to_string(),
 			self.teleop.high_cube_scored.to_string(),
