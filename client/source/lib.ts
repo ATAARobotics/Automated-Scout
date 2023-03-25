@@ -1,12 +1,13 @@
 // Exporting Pit Scouting values types, to clarify which values are recieved by Scouty McScout in the database file
 export type MatchType = "qualification" | "practice";
-export type PickupType = 0 | 1 | 2 | 3;
-export type FloorPickupRange = 0 | 1 | 2 | 3;
 export type HumanPickupRange = 0 | 1 | 2 | 3;
 export type StackType = 0 | 1 | 2 | 3;
-export type StackRange = 0 | 1 | 2 | 3 | 4;
-export type BusinessLevel = 0 | 1 | 2;
-export type DriveType = 0 | 1 | 2;
+export type ConfidenceLevel = 0 | 1 | 2 | 3 | 4;
+export type BumperType = 0 | 1 | 2;
+export type VisionType = 0 | 1 | 2 | 3;
+export type PreferredStack = 0 | 1 | 2 | 3;
+export type PreferredPlay = 0 | 1 | 2 | 3;
+export type ChargeBattery = 0 | 1;
 
 // Exporting TeamInfo, these are the same as the variables in analysis
 export interface TeamInfo {
@@ -59,41 +60,6 @@ export interface TeamInfo {
 	overallStability: number;
 	overallDefence: number;
 	rankingPoints: number;
-	// Pit Scouting
-	averagePeopleInPit: number;
-	averagePitBusiness: number;
-	averagePitChaos: number;
-	friendly: boolean;
-	claimedAutoBallCount: number | null;
-	claimedBallCapacity: number | null;
-	claimedBalanceTime: number | null;
-	claimedEverybot: boolean;
-	claimedDriveType: DriveType | null;
-	claimedPickupCone: boolean;
-	claimedPickupCube: boolean;
-	claimedPickupElsewhere: boolean;
-	claimedPickupHybrid: boolean;
-	claimedPickupChute: boolean;
-	claimedPickupSlideShelf: boolean;
-	claimedStackCone: boolean;
-	claimedStackCube: boolean;
-	claimedStackHybrid: boolean;
-	claimedStackMiddle: boolean;
-	claimedStackHigh: boolean;
-	originalBalanceTime: number | null;
-	originalEverybot: boolean;
-	originalDriveType: DriveType | null;
-	originalPickupCone: boolean;
-	originalPickupCube: boolean;
-	originalPickupElsewhere: boolean;
-	originalPickupHybrid: boolean;
-	originalPickupChute: boolean;
-	originalPickupSlideShelf: boolean;
-	originalStackCone: boolean;
-	originalStackCube: boolean;
-	originalStackHybrid: boolean;
-	originalStackMiddle: boolean;
-	originalStackHigh: boolean;
 	matches: number;
 }
 
@@ -141,21 +107,25 @@ export interface RobotInfo {
 	scoutingTime: number;
 	team: number;
 	pit: {
-		busy: BusinessLevel | undefined;
+		confidenceLevel: ConfidenceLevel | undefined;
 		pitPeople: number | undefined;
 		chaos: number | undefined;
-		friendly: boolean | undefined;
-		comments: string;
+		scoutingMethod: string;
 	};
 	robot: {
-		pickupType: PickupType | undefined;
-		floorPickupRange: FloorPickupRange | undefined;
+		bumperType: BumperType | undefined;
+		visionType: VisionType | undefined;
 		humanPickupRange: HumanPickupRange | undefined;
 		stackType: StackType | undefined;
-		stackRange: StackRange | undefined;
-		driveType: DriveType | undefined;
+		preferredStack: PreferredStack | undefined;
+		preferredPlay: PreferredPlay | undefined
+		driveType: string;
+		driveMotorAmount: number | undefined;
+		otherMotorAmount: number | undefined;
 		balanceTime: number | undefined;
-		everybot: boolean | undefined;
+		chargeBattery: ChargeBattery | undefined;
+		batteryAmount: number | undefined;
+		autoSettings: string;
 		comments: string;
 	};
 	images: string[];

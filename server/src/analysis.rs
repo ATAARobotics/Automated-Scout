@@ -2,7 +2,7 @@ use std::cmp::Ordering;
 use std::collections::HashMap;
 
 // Make sure to edit this with anything in the data file!
-use crate::data::{DriveType, FloorPickupRange, HumanPickupRange, PickupType, StackRange, StackType, MatchType, AutoChargeStation, TeleopChargeStation};
+use crate::data::{MatchType, AutoChargeStation, TeleopChargeStation};
 use serde::{Deserialize, Serialize};
 
 use crate::Database;
@@ -65,40 +65,6 @@ pub struct TeamInfo {
 	pub overall_stability: f32,
 	pub overall_defence: f32,
 	pub ranking_points: f32,
-	// Pit Scouting
-	pub average_people_in_pit: f32,
-	pub average_pit_business: f32,
-	pub average_pit_chaos: f32,
-	pub friendly: bool,
-	// Claimed is the initial value, it overrides into original if the time is newer
-	pub claimed_balance_time: Option<u32>,
-	pub claimed_everybot: bool,
-	pub claimed_drive_type: Option<DriveType>,
-	pub claimed_pickup_cone: bool,
-	pub claimed_pickup_cube: bool,
-	pub claimed_pickup_elsewhere: bool,
-	pub claimed_pickup_hybrid: bool,
-	pub claimed_pickup_chute: bool,
-	pub claimed_pickup_slide_shelf: bool,
-	pub claimed_stack_cone: bool,
-	pub claimed_stack_cube: bool,
-	pub claimed_stack_hybrid: bool,
-	pub claimed_stack_middle: bool,
-	pub claimed_stack_high: bool,
-	pub original_balance_time: Option<u32>,
-	pub original_everybot: bool,
-	pub original_drive_type: Option<DriveType>,
-	pub original_pickup_cone: bool,
-	pub original_pickup_cube: bool,
-	pub original_pickup_elsewhere: bool,
-	pub original_pickup_hybrid: bool,
-	pub original_pickup_chute: bool,
-	pub original_pickup_slide_shelf: bool,
-	pub original_stack_cone: bool,
-	pub original_stack_cube: bool,
-	pub original_stack_hybrid: bool,
-	pub original_stack_middle: bool,
-	pub original_stack_high: bool,
 	pub matches: u32,
 	teleop_scoring_matches: u32,
 	auto_scoring_matches: u32,
@@ -355,127 +321,6 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 			.or_insert_with(Vec::new);
 		infos.push(team_info);
 	}
-	// Prioritize newer data
-	for (team_number, infos) in team_info_by_team {
-		let first = infos
-			.iter()
-			.reduce(|first, i| {
-				if i.visit_number < first.visit_number {
-					i
-				} else {
-					first
-				}
-			})
-			.unwrap();
-		let last = infos
-			.iter()
-			.reduce(|last, i| {
-				if i.visit_number > last.visit_number {
-					i
-				} else {
-					last
-				}
-			})
-			.unwrap();
-		let mut team = teams
-			.entry(team_number)
-			.or_insert_with(|| TeamInfo::new(team_number));
-		let mut total = 0;
-		team.friendly = true;
-		// Set averages and newest data for pit scouting
-		for info in &infos {
-			total += 1;
-			team.average_people_in_pit += info.pit.pit_people.unwrap_or(0) as f32;
-			team.average_pit_business += info.pit.busy.unwrap_or(0) as f32;
-			team.average_pit_chaos += info.pit.chaos.unwrap_or(0) as f32;
-			team.friendly = team.friendly && info.pit.friendly.unwrap_or(true);
-		}
-		team.average_people_in_pit /= total as f32;
-		team.average_pit_business /= total as f32;
-		team.average_pit_chaos /= total as f32;
-
-		// For claimed stats
-		team.claimed_balance_time = last.robot.balance_time;
-		team.claimed_everybot = last.robot.everybot.unwrap_or(false);
-		// If elsewhere or both is selected, elsewhere is assumed to be pickupable
-		team.claimed_pickup_elsewhere = last.robot.floor_pickup_range == Some(FloorPickupRange::Elsewhere)
-			|| last.robot.floor_pickup_range == Some(FloorPickupRange::Both);
-		// If hybrid or both is selected, hybrid is assumed to be pickupable
-		team.claimed_pickup_hybrid = last.robot.floor_pickup_range == Some(FloorPickupRange::Hybrid)
-			|| last.robot.floor_pickup_range == Some(FloorPickupRange::Both);
-		// If chute or both is selected, chute is assumed to be pickupable
-			team.claimed_pickup_chute = last.robot.human_pickup_range == Some(HumanPickupRange::Chute)
-			|| last.robot.human_pickup_range == Some(HumanPickupRange::Both);
-		// If slide shelf or both is selected, slide shelf is assumed to be pickupable
-		team.claimed_pickup_slide_shelf = last.robot.human_pickup_range == Some(HumanPickupRange::SlideShelf)
-			|| last.robot.human_pickup_range == Some(HumanPickupRange::Both);
-		// If cone or both is selected, Cone is assumed to be pickupable
-		team.claimed_pickup_cone = last.robot.pickup_type == Some(PickupType::Cone)
-			|| last.robot.pickup_type == Some(PickupType::Both);
-		// If cube or both is selected, Cube is assumed to be pickupable
-		team.claimed_pickup_cube = last.robot.pickup_type == Some(PickupType::Cube)
-			|| last.robot.pickup_type == Some(PickupType::Both);
-		// If anything other then None is selected, hybrid is assumed to be stackable
-		team.claimed_stack_hybrid = last.robot.stack_range == Some(StackRange::Hybrid)
-			|| last.robot.stack_range == Some(StackRange::Middle)
-			|| last.robot.stack_range == Some(StackRange::High)
-			|| last.robot.stack_range == Some(StackRange::All);
-		// If middle or both is selected, Middle is assumed to be stackable
-		team.claimed_stack_middle = last.robot.stack_range == Some(StackRange::Middle)
-			|| last.robot.stack_range == Some(StackRange::All);
-		// If high or both is selected, High is assumed to be stackable
-		team.claimed_stack_high = last.robot.stack_range == Some(StackRange::High)
-			|| last.robot.stack_range == Some(StackRange::All);
-		// If cone or both is selected, Cone is assumed to be stackable
-		team.claimed_stack_cone = last.robot.stack_type == Some(StackType::Cone)
-			|| last.robot.stack_type == Some(StackType::Both);
-		// If cube or both is selected, Cube is assumed to be stackable
-		team.claimed_stack_cube = last.robot.stack_type == Some(StackType::Cube)
-			|| last.robot.stack_type == Some(StackType::Both);
-
-		team.claimed_drive_type = last.robot.drive_type;
-
-		// For original stats
-		team.original_balance_time = first.robot.balance_time;
-		team.original_everybot = first.robot.everybot.unwrap_or(false);
-		// If elsewhere or both is selected, elsewhere is assumed to be pickupable
-		team.original_pickup_elsewhere = last.robot.floor_pickup_range == Some(FloorPickupRange::Elsewhere)
-			|| last.robot.floor_pickup_range == Some(FloorPickupRange::Both);
-		// If hybrid or both is selected, hybrid is assumed to be pickupable
-		team.original_pickup_hybrid = last.robot.floor_pickup_range == Some(FloorPickupRange::Hybrid)
-			|| last.robot.floor_pickup_range == Some(FloorPickupRange::Both);
-		// If chute or both is selected, chute is assumed to be pickupable
-		team.original_pickup_chute = last.robot.human_pickup_range == Some(HumanPickupRange::Chute)
-			|| last.robot.human_pickup_range == Some(HumanPickupRange::Both);
-		// If slide shelf or both is selected, slide shelf is assumed to be pickupable
-		team.original_pickup_slide_shelf = last.robot.human_pickup_range == Some(HumanPickupRange::SlideShelf)
-			|| last.robot.human_pickup_range == Some(HumanPickupRange::Both);
-		// If cone or both is selected, Cone is assumed to be pickupable
-		team.original_pickup_cone = last.robot.pickup_type == Some(PickupType::Cone)
-			|| last.robot.pickup_type == Some(PickupType::Both);
-		// If cube or both is selected, Cube is assumed to be pickupable
-		team.original_pickup_cube = last.robot.pickup_type == Some(PickupType::Cube)
-			|| last.robot.pickup_type == Some(PickupType::Both);
-		
-		// If anything other then None is selected, hybrid is assumed to be stackable
-		team.original_stack_hybrid = last.robot.stack_range == Some(StackRange::Hybrid)
-			|| last.robot.stack_range == Some(StackRange::Middle)
-			|| last.robot.stack_range == Some(StackRange::High)
-			|| last.robot.stack_range == Some(StackRange::All);
-		// If middle or both is selected, Middle is assumed to be stackable
-		team.original_stack_middle = last.robot.stack_range == Some(StackRange::Middle)
-			|| last.robot.stack_range == Some(StackRange::All);
-		// If high or both is selected, High is assumed to be stackable
-		team.original_stack_high = last.robot.stack_range == Some(StackRange::High)
-			|| last.robot.stack_range == Some(StackRange::All);
-		// If cone or both is selected, Cone is assumed to be stackable
-		team.original_stack_cone = last.robot.stack_type == Some(StackType::Cone)
-			|| last.robot.stack_type == Some(StackType::Both);
-		// If cube or both is selected, Cube is assumed to be stackable
-		team.original_stack_cube = last.robot.stack_type == Some(StackType::Cube)
-			|| last.robot.stack_type == Some(StackType::Both);
-		team.original_drive_type = first.robot.drive_type;
-	}
 
 	// Match info
 	let mut matches_by_game = HashMap::new();
@@ -680,9 +525,9 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 		team_info.average_hybrid_score /= match_count;
 		team_info.average_middle_score /= match_count;
 		team_info.average_high_score /= match_count;
-		team_info.charge_station_auto_off /= (match_count-team_info.charge_station_auto_other);
-		team_info.charge_station_auto_on /= (match_count-team_info.charge_station_auto_other);
-		team_info.charge_station_auto_charged /= (match_count-team_info.charge_station_auto_other);
+		team_info.charge_station_auto_off /= match_count-team_info.charge_station_auto_other;
+		team_info.charge_station_auto_on /= match_count-team_info.charge_station_auto_other;
+		team_info.charge_station_auto_charged /= match_count-team_info.charge_station_auto_other;
 		team_info.charge_station_teleop_off /= match_count;
 		team_info.charge_station_teleop_parked /= match_count;
 		team_info.charge_station_teleop_on /= match_count;

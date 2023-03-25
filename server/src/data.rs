@@ -75,77 +75,43 @@ impl Display for TeleopChargeStation {
 		}
 	}
 }
-// Setting up PickupType
+// Setting up PreferredPlay
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[serde(from = "u32")]
 #[serde(into = "u32")]
-pub enum PickupType {
-	None = 0,
-	Cone = 1,
-	Cube = 2,
-	Both = 3,
+pub enum PreferredPlay {
+	Defence = 0,
+	PreferDefence = 1,
+	PreferOffence = 2,
+	Offence = 3,
 }
 
-impl From<u32> for PickupType {
-	fn from(value: u32) -> Self {
-		match value {
-			0 => PickupType::None,
-			1 => PickupType::Cone,
-			2 => PickupType::Cube,
-			3 => PickupType::Both,
-			_ => panic!("Invalid Pickup Type: {}", value),
-		}
-	}
-}
-
-impl From<PickupType> for u32 {
-	fn from(value: PickupType) -> Self {
-		match value {
-			PickupType::None => 0,
-			PickupType::Cone => 1,
-			PickupType::Cube => 2,
-			PickupType::Both => 3,
-		}
-	}
-}
-// Setting up FloorPickupRange
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-#[serde(from = "u32")]
-#[serde(into = "u32")]
-pub enum FloorPickupRange {
-	None = 0,
-	Elsewhere = 1,
-	Hybrid = 2,
-	Both = 3,
-}
-
-impl Default for FloorPickupRange {
+impl Default for PreferredPlay {
 	fn default() -> Self {
-		FloorPickupRange::None
+		PreferredPlay::PreferOffence
 	}
 }
 
-impl From<u32> for FloorPickupRange {
+impl From<u32> for PreferredPlay {
 	fn from(value: u32) -> Self {
 		match value {
-			0 => FloorPickupRange::None,
-			1 => FloorPickupRange::Elsewhere,
-			2 => FloorPickupRange::Hybrid,
-			3 => FloorPickupRange::Both,
-			_ => panic!("Invalid Floor Pickup Range value: {}", value),
+			0 => PreferredPlay::Defence,
+			1 => PreferredPlay::PreferDefence,
+			2 => PreferredPlay::PreferOffence,
+			3 => PreferredPlay::Offence,
+			_ => panic!("Invalid Preferred Play value: {}", value),
 		}
 	}
 }
 
-impl From<FloorPickupRange> for u32 {
-	fn from(value: FloorPickupRange) -> Self {
+impl From<PreferredPlay> for u32 {
+	fn from(value: PreferredPlay) -> Self {
 		match value {
-			FloorPickupRange::None => 0,
-			FloorPickupRange::Elsewhere => 1,
-			FloorPickupRange::Hybrid => 2,
-			FloorPickupRange::Both => 3,
+			PreferredPlay::Defence => 0,
+			PreferredPlay::PreferDefence => 1,
+			PreferredPlay::PreferOffence => 2,
+			PreferredPlay::Offence => 3,
 		}
 	}
 }
@@ -223,77 +189,197 @@ impl From<StackType> for u32 {
 		}
 	}
 }
-// Setting up StackRange
+// Setting up PreferredStack
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[serde(from = "u32")]
 #[serde(into = "u32")]
-pub enum StackRange {
+pub enum PreferredStack {
 	None = 0,
 	Hybrid = 1,
 	Middle = 2,
 	High = 3,
-	All = 4,
 }
 
-impl Default for StackRange {
+impl Default for PreferredStack {
 	fn default() -> Self {
-		StackRange::None
+		PreferredStack::None
 	}
 }
 
-impl From<u32> for StackRange {
+impl From<u32> for PreferredStack {
 	fn from(value: u32) -> Self {
 		match value {
-			0 => StackRange::None,
-			1 => StackRange::Hybrid,
-			2 => StackRange::Middle,
-			3 => StackRange::High,
-			4 => StackRange::All,
-			_ => panic!("Invalid Stack Range value: {}", value),
+			0 => PreferredStack::None,
+			1 => PreferredStack::Hybrid,
+			2 => PreferredStack::Middle,
+			3 => PreferredStack::High,
+			_ => panic!("Invalid Preferred Stack value: {}", value),
 		}
 	}
 }
 
-impl From<StackRange> for u32 {
-	fn from(value: StackRange) -> Self {
+impl From<PreferredStack> for u32 {
+	fn from(value: PreferredStack) -> Self {
 		match value {
-			StackRange::None => 0,
-			StackRange::Hybrid => 1,
-			StackRange::Middle => 2,
-			StackRange::High => 3,
-			StackRange::All => 4,
+			PreferredStack::None => 0,
+			PreferredStack::Hybrid => 1,
+			PreferredStack::Middle => 2,
+			PreferredStack::High => 3,
 		}
 	}
 }
-// Setting up DriveType
+// Setting up ConfidenceLevel
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[serde(from = "u32")]
 #[serde(into = "u32")]
-pub enum DriveType {
-	Swerve = 0,
-	Tank = 1,
-	Other = 2,
+pub enum ConfidenceLevel {
+	HonestlyUnconfident = 0,
+	SemiUnconfident = 1,
+	Middle = 2,
+	Confident = 3,
+	TooConfident = 4,
 }
 
-impl From<u32> for DriveType {
+impl Default for ConfidenceLevel {
+	fn default() -> Self {
+		ConfidenceLevel::Middle
+	}
+}
+
+impl From<u32> for ConfidenceLevel {
 	fn from(value: u32) -> Self {
 		match value {
-			0 => DriveType::Swerve,
-			1 => DriveType::Tank,
-			2 => DriveType::Other,
-			_ => panic!("Invalid drive type: {}", value),
+			0 => ConfidenceLevel::HonestlyUnconfident,
+			1 => ConfidenceLevel::SemiUnconfident,
+			2 => ConfidenceLevel::Middle,
+			3 => ConfidenceLevel::Confident,
+			4 => ConfidenceLevel::TooConfident,
+			_ => panic!("Invalid Cnfidence value: {}", value),
 		}
 	}
 }
 
-impl From<DriveType> for u32 {
-	fn from(value: DriveType) -> Self {
+impl From<ConfidenceLevel> for u32 {
+	fn from(value: ConfidenceLevel) -> Self {
 		match value {
-			DriveType::Swerve => 0,
-			DriveType::Tank => 1,
-			DriveType::Other => 2,
+			ConfidenceLevel::HonestlyUnconfident => 0,
+			ConfidenceLevel::SemiUnconfident => 1,
+			ConfidenceLevel::Middle => 2,
+			ConfidenceLevel::Confident => 3,
+			ConfidenceLevel::TooConfident => 4,
+		}
+	}
+}
+// Setting up ChargeBattery
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+#[serde(from = "u32")]
+#[serde(into = "u32")]
+pub enum ChargeBattery {
+	No = 0,
+	Yes = 1,
+}
+
+impl Default for ChargeBattery {
+	fn default() -> Self {
+		ChargeBattery::No
+	}
+}
+
+impl From<u32> for ChargeBattery {
+	fn from(value: u32) -> Self {
+		match value {
+			0 => ChargeBattery::No,
+			1 => ChargeBattery::Yes,
+			_ => panic!("Invalid Charge Battery value: {}", value),
+		}
+	}
+}
+
+impl From<ChargeBattery> for u32 {
+	fn from(value: ChargeBattery) -> Self {
+		match value {
+			ChargeBattery::No => 0,
+			ChargeBattery::Yes => 1,
+		}
+	}
+}
+// Setting up VisionType
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+#[serde(from = "u32")]
+#[serde(into = "u32")]
+pub enum VisionType {
+	None = 0,
+	Tape = 1,
+	AprilTags = 2,
+	Both = 3,
+}
+
+impl Default for VisionType {
+	fn default() -> Self {
+		VisionType::None
+	}
+}
+
+impl From<u32> for VisionType {
+	fn from(value: u32) -> Self {
+		match value {
+			0 => VisionType::None,
+			1 => VisionType::Tape,
+			2 => VisionType::AprilTags,
+			3 => VisionType::Both,
+			_ => panic!("Invalid Vision value: {}", value),
+		}
+	}
+}
+
+impl From<VisionType> for u32 {
+	fn from(value: VisionType) -> Self {
+		match value {
+			VisionType::None => 0,
+			VisionType::Tape => 1,
+			VisionType::AprilTags => 2,
+			VisionType::Both => 3,
+		}
+	}
+}
+// Setting up BumperType
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+#[serde(from = "u32")]
+#[serde(into = "u32")]
+pub enum BumperType {
+	None = 0,
+	Swap = 1,
+	Reversable = 2,
+}
+
+impl Default for BumperType {
+	fn default() -> Self {
+		BumperType::None
+	}
+}
+
+impl From<u32> for BumperType {
+	fn from(value: u32) -> Self {
+		match value {
+			0 => BumperType::None,
+			1 => BumperType::Swap,
+			2 => BumperType::Reversable,
+			_ => panic!("Invalid Bumper value: {}", value),
+		}
+	}
+}
+
+impl From<BumperType> for u32 {
+	fn from(value: BumperType) -> Self {
+		match value {
+			BumperType::None => 0,
+			BumperType::Swap => 1,
+			BumperType::Reversable => 2,
 		}
 	}
 }
@@ -359,11 +445,10 @@ pub struct MatchInfo {
 #[serde(rename_all = "camelCase")]
 #[serde(default)]
 pub struct Pit {
-	pub busy: Option<u32>,
 	pub pit_people: Option<u32>,
 	pub chaos: Option<u32>,
-	pub friendly: Option<bool>,
-	pub comments: String,
+	pub confidence_level: Option<ConfidenceLevel>,
+	pub scouting_method: String,
 }
 
 // Setting up Robot (Pit Scouting) structure, contains a few types from earlier inside of it
@@ -371,14 +456,19 @@ pub struct Pit {
 #[serde(rename_all = "camelCase")]
 #[serde(default)]
 pub struct Robot {
-	pub pickup_type: Option<PickupType>,
-	pub floor_pickup_range: Option<FloorPickupRange>,
+	pub bumper_type: Option<BumperType>,
+	pub vision_type: Option<VisionType>,
 	pub human_pickup_range: Option<HumanPickupRange>,
 	pub stack_type: Option<StackType>,
-	pub stack_range: Option<StackRange>,
-	pub drive_type: Option<DriveType>,
+	pub preferred_play: Option<PreferredPlay>,
+	pub preferred_stack: Option<PreferredStack>,
+	pub charge_battery: Option<ChargeBattery>,
+	pub battery_amount: Option<u32>,
+	pub drive_motor_amount: Option<u32>,
+	pub other_motor_amount: Option<u32>,
 	pub balance_time: Option<u32>,
-	pub everybot: Option<bool>,
+	pub auto_settings: String,
+	pub drive_type: String,
 	pub comments: String,
 }
 

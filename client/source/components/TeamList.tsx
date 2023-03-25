@@ -147,7 +147,7 @@ export const order: [
 		0.75,
 		false,
 		1.0,
-	],
+	],*/
 	[
 		"Luck Sc.",
 		(match: TeamInfo) => match.averageLuckScore,
@@ -155,7 +155,7 @@ export const order: [
 		0.75,
 		false,
 		-1.0,
-	],*/
+	],
 	[
 		"Speed",
 		(match: TeamInfo) => match.overallSpeed,

@@ -26,6 +26,33 @@ function KeyValueBox(props: {
 		</div>
 	);
 }
+/*To change:
+Remove:
+Doing Stuff VA
+Friendly  VA
+Pickup Type VA
+Floor pickup range VA
+Everybot VA
+
+Change:
+Drive train - make it a string VA
+
+Add:
+Certainty meter VA
+Reversable Bumpers (bumper type) VA
+Battery Quantity VA
+Can they charge their batteries VA
+Amount of motors (drive) VA
+Amount of motors (other) VA
+Scouting method VA
+Auto settings VA
+Able to read Tape/AprilTags VA
+Prefer to play defence or offence VA
+Prefer to play high middle or low VA
+
+(V means added to Data)
+(A means added to Analysis)
+*/
 /**
  * Page not found page.
  *
@@ -70,18 +97,18 @@ function TeamView(): React.ReactElement {
 						(team) => team.teamNumber === teamNumber
 					) as TeamInfo;
 					// Making a construct of a few values, so that if the data is unknown it will show as unknown
-					const pickupType = [
-						"None",
-						"Cone",
-						"Cube",
-						"Both",
+					const preferredPlay = [
+						"Defence",
+						"Prefer Defence",
+						"Prefer Offence",
+						"Offence",
 						"Unknown",
 					];
-					const floorPickupRange = [
+					const preferredStack = [
 						"None",
-						"Elsewhere",
 						"Hybrid",
-						"Both",
+						"Middle",
+						"High",
 						"Unknown",
 					];
 					const humanPickupRange = [
@@ -98,18 +125,22 @@ function TeamView(): React.ReactElement {
 						"Both",
 						"Unknown",
 					];
-					const stackRange = [
-						"None",
-						"Hybrid",
-						"Mid",
-						"High",
-						"All",
+					const chargeBattery = [
+						"No",
+						"Yes",
 						"Unknown",
 					];
-					const driveTypes = [
-						"Swerve",
-						"Tank",
-						"Other",
+					const visionType = [
+						"None",
+						"Tape",
+						"AprilTag",
+						"Both",
+						"Unknown",
+					];
+					const bumperType = [
+						"None",
+						"Swap",
+						"Reversable",
 						"Unknown",
 					];
 					// Returns this info onto the site. Anything in here will be put on the site including comments!
@@ -136,13 +167,15 @@ function TeamView(): React.ReactElement {
 							<div>
 								{fullTeamInfo.result.pitVisits.map((visit, i) => {
 									if (
-										visit.pit.comments.length > 0 ||
-										visit.robot.comments
+										visit.pit.scoutingMethod.length > 0 ||
+										visit.robot.comments || visit.robot.driveType || visit.robot.autoSettings
 									) {
 										return (
 											<p key={`pit-${i}`}>
 												<b>Pit Visit #{visit.scoutingTime}: </b>
-												<span>{visit.pit.comments} </span>
+												<span>{visit.pit.scoutingMethod} </span>
+												<span>{visit.robot.driveType}</span>
+												<span>{visit.robot.autoSettings}</span>
 												<span>{visit.robot.comments}</span>
 											</p>
 										);
@@ -171,10 +204,6 @@ function TeamView(): React.ReactElement {
 											<h3>Pit Visit #{visit.scoutingTime}: </h3>
 											<div className="propertyList">
 												<KeyValueBox
-													label="Business"
-													value={visit.pit.busy}
-												/>
-												<KeyValueBox
 													label="Chaos Level"
 													value={visit.pit.chaos}
 												/>
@@ -183,30 +212,30 @@ function TeamView(): React.ReactElement {
 													value={visit.pit.pitPeople}
 												/>
 												<KeyValueBox
-													label="Friendly"
-													value={visit.pit.friendly}
+													label="Confidence Level"
+													value={visit.pit.confidenceLevel}
 												/>
 												<KeyValueBox
-													label="Pickup Type"
+													label="Preferred Play"
 													value={
-														pickupType[
-															visit.robot.pickupType ?? 4
+														preferredPlay[
+															visit.robot.preferredPlay ?? 4
 														]
 													}
 												/>
 												<KeyValueBox
-													label="Floor Pickup Range"
+													label="Charge Battery"
 													value={
-														floorPickupRange[
-															visit.robot.floorPickupRange ?? 4
+														chargeBattery[
+															visit.robot.chargeBattery ?? 2
 														]
 													}
 												/>
 												<KeyValueBox
-													label="Human Pickup Range"
+													label="Vision Type"
 													value={
-														humanPickupRange[
-															visit.robot.humanPickupRange ?? 4
+														visionType[
+															visit.robot.visionType ?? 4
 														]
 													}
 												/>
@@ -219,10 +248,10 @@ function TeamView(): React.ReactElement {
 													}
 												/>
 												<KeyValueBox
-													label="Stack Range"
+													label="Bumper Type"
 													value={
-														stackRange[
-															visit.robot.stackRange ?? 5
+														bumperType[
+															visit.robot.bumperType ?? 3
 														]
 													}
 												/>
@@ -231,17 +260,18 @@ function TeamView(): React.ReactElement {
 													value={visit.robot.balanceTime}
 												/>
 												<KeyValueBox
-													label="Everybot"
-													value={visit.robot.everybot}
+													label="Battery Amount"
+													value={visit.robot.batteryAmount}
 												/>
 												<KeyValueBox
-													label="Drive"
-													value={
-														driveTypes[
-															visit.robot.driveType ?? 3
-														]
-													}
+													label="Drive Motor Amount"
+													value={visit.robot.driveMotorAmount}
 												/>
+												<KeyValueBox
+													label="Other Motor Amount"
+													value={visit.robot.otherMotorAmount}
+												/>
+												
 											</div>
 										</div>
 									);
