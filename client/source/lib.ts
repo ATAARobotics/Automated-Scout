@@ -95,7 +95,6 @@ export interface MatchInfo {
 	stability: number;
 	defence: number | undefined;
 	isPrimaryDefence: boolean;
-	wasBroken: boolean;
 	wasDisabled: boolean;
 	notes: string;
 	lastModifiedTime: number;

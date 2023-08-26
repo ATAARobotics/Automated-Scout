@@ -27,31 +27,7 @@ function KeyValueBox(props: {
 	);
 }
 /*To change:
-Remove:
-Doing Stuff VA
-Friendly  VA
-Pickup Type VA
-Floor pickup range VA
-Everybot VA
 
-Change:
-Drive train - make it a string VA
-
-Add:
-Certainty meter VA
-Reversable Bumpers (bumper type) VA
-Battery Quantity VA
-Can they charge their batteries VA
-Amount of motors (drive) VA
-Amount of motors (other) VA
-Scouting method VA
-Auto settings VA
-Able to read Tape/AprilTags VA
-Prefer to play defence or offence VA
-Prefer to play high middle or low VA
-
-(V means added to Data)
-(A means added to Analysis)
 */
 /**
  * Page not found page.

@@ -540,7 +540,6 @@ impl MatchInfo {
 				.map(|v| v.to_string())
 				.unwrap_or_else(|| "N/A".to_string()),
 			self.is_primary_defence.to_string(),
-			self.was_broken.to_string(),
 			self.was_disabled.to_string(),
 			"\"".to_string() + &self.notes.replace('\n', "  ") + "\"",
 		]
