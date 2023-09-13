@@ -433,8 +433,6 @@ pub struct MatchInfo {
 	pub speed: f32,
 	pub stability: f32,
 	pub defence: Option<f32>,
-	pub is_primary_defence: bool,
-	pub was_broken: bool,
 	pub was_disabled: bool,
 	pub notes: String,
 	pub last_modified_time: u64,
@@ -505,7 +503,7 @@ impl Default for Info {
 // Convert match info to string
 impl MatchInfo {
 	// Arden match data export
-	pub const HEADER: &'static str = "match_number,match_category,team,auto_exited_tarmac,auto_charge_station,auto_hybrid_cube_scored,auto_hybrid_cone_scored,auto_middle_cube_scored,auto_middle_cone_scored,auto_high_cube_scored,auto_high_cone_scored,teleop_hybrid_cube_scored,teleop_hybrid_cone_scored,teleop_middle_cube_scored,teleop_middle_cone_scored,teleop_high_cube_scored,teleop_high_cone_scored,speed,stability,defence,is_primary_defence,was_broken,was_disabled,notes\n";
+	pub const HEADER: &'static str = "match_number,match_category,team,auto_exited_tarmac,auto_charge_station,auto_hybrid_cube_scored,auto_hybrid_cone_scored,auto_middle_cube_scored,auto_middle_cone_scored,auto_high_cube_scored,auto_high_cone_scored,teleop_hybrid_cube_scored,teleop_hybrid_cone_scored,teleop_middle_cube_scored,teleop_middle_cone_scored,teleop_high_cube_scored,teleop_high_cone_scored,speed,stability,defence,was_disabled,notes\n";
 	pub fn write_csv_line(&self) -> String {
 		vec![
 			self.match_number.to_string(),
@@ -539,7 +537,6 @@ impl MatchInfo {
 			self.defence
 				.map(|v| v.to_string())
 				.unwrap_or_else(|| "N/A".to_string()),
-			self.is_primary_defence.to_string(),
 			self.was_disabled.to_string(),
 			"\"".to_string() + &self.notes.replace('\n', "  ") + "\"",
 		]

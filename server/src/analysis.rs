@@ -473,7 +473,7 @@ pub fn analyze_data(database: &Database) -> Vec<TeamInfo> {
 	// Calculate amount of overall stats, the +1.0 is because f32 is a range of 0-4 and we want a range of 1-5
 		team.overall_speed += match_info.speed as f32 + 1.0;
 		team.overall_stability += match_info.stability as f32 + 1.0;
-	// Check to make sure defence value is given, as we don't want data for when defence is not done in a match
+	// NOT WORKING - Check to make sure defence value is given, as we don't want data for when defence is not done in a match - NOT WORKING
 		if let Some(v) = match_info.defence {
 			team.overall_defence += v + 1.0;
 		}

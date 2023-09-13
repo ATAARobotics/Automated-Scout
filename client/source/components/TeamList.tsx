@@ -172,6 +172,7 @@ export const order: [
 		false,
 		5.0,
 	],
+	// Note: This is wrong, no defence is counted as 0 changing the averages when defence isnt played
 	[
 		"Defence",
 		(match: TeamInfo) => match.overallDefence,
